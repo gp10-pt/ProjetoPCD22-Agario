@@ -30,6 +30,7 @@ public class Game extends Observable {
 
 	public Game() {
 		board = new Cell[Game.DIMX][Game.DIMY];
+		this.finished=0;
 		for (int x = 0; x < Game.DIMX; x++) 
 			for (int y = 0; y < Game.DIMY; y++) 
 				board[x][y] = new Cell(new Coordinate(x, y),this);
