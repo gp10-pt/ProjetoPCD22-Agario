@@ -17,6 +17,7 @@ public abstract class Player implements Runnable {
 
 	private byte currentStrength;
 	protected byte originalStrength;
+	public boolean isBlocked=false;
 	private boolean isDead=false;
 	private boolean isSleeping=true;
 
@@ -107,7 +108,17 @@ public abstract class Player implements Runnable {
 		return this.isSleeping;
 	}
 
-	public void addPlayerToGame(){
+	public synchronized boolean isBlocked(){
+		return this.isBlocked==true;
+	}
+	
+	public synchronized void setUnblocked() {
+		this.isBlocked=false;
+//		System.out.println("Player "+this.getIdentification()+" unblocked!");
+		this.notify();
+	}
+	
+	public synchronized void addPlayerToGame(){
 		Cell initialPos=this.game.getRandomCell();
 		//System.out.println("posicão original do player "+this.getIdentification()+": "+initialPos.getPosition().toString());
 		while(initialPos.isOcupied()){
@@ -158,27 +169,58 @@ public abstract class Player implements Runnable {
 		}		
 	}
 	
+	//Unblocker da call a unlock() e este notifica a thread p voltar a movimentar
+//	public synchronized void unlock() throws InterruptedException {
+//		this.th.sleep(2000);
+//		while(!this.isBlocked()) {
+//			notifyAll();
+//			System.out.println("Player "+this.getIdentification()+" unlocked ");
+//			wait();	
+//		}
+//		this.isBlocked=true;
+//		notifyAll();
+//	}
+	
+	public synchronized void lock() throws InterruptedException {
+		this.isBlocked=true;
+		while(this.isBlocked()) {
+			System.out.println("Player "+this.getIdentification()+" lockado ");
+			wait();
+//			notifyAll();
+		}
+//		System.out.println("XXXXXX");
+//		setUnblocked();
+		this.notify();	
+	}
+	
 	public void run(){		
 		try {			
-			//sleep after add , se for lancado depois por ter sido bloqueado vai esperar 10segs antes da proxima jogada nao sei se é suposto
-			addPlayerToGame();		
+			//sleep after add , se for lancado depois por ter sido bloqueado vai esperar 10segs antes da proxima jogada e n pode ser atacado
+			addPlayerToGame();
 			th.sleep(4000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.print("pronto a correr "+ id +"\n");
-		this.isSleeping=false;	
-		for(;;){
-			try {
-				game.move(this);
-				checkWin();
-				th.sleep(this.game.REFRESH_INTERVAL);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		System.out.print("---------- pronto a correr "+ id +"\n");
+		this.isSleeping=false;
+//		while(true) {
+		for(;;) {
+			try {	
+//				if(!this.isBlocked()) {
+					game.move(this);
+					checkWin();
+					th.sleep(this.game.REFRESH_INTERVAL);
+	//				while(this.isBlocked()) {
+	//					lock();
+//				}	
+//				else {th.sleep(this.game.REFRESH_INTERVAL);}
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
-	}		
-}
+}		
+
 

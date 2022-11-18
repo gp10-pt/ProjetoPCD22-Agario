@@ -34,6 +34,9 @@ public class Game extends Observable {
 		for (int x = 0; x < Game.DIMX; x++) 
 			for (int y = 0; y < Game.DIMY; y++) 
 				board[x][y] = new Cell(new Coordinate(x, y),this);
+		
+		Unblocker u= new Unblocker(this);
+		u.th.start();
 	}
 
 	/** 
@@ -87,7 +90,7 @@ public class Game extends Observable {
 				p.next=keyD;
 			}
 			moveTo(p, p.next);
-			notifyChange();
+//			notifyChange();
 		}
 	}
 
@@ -121,22 +124,23 @@ public class Game extends Observable {
 					break;
 				}
 				}
-				// movimenta se pois a celula esta vazia
+				// movimenta se pois a celula esta vazia e nao esta bloqueado
 			if(future!= null && !getCell(future).isOcupied()) {
 				//System.out.println(p.getIdentification() + " - destino: "+future.toString()+ " - ronda "+ p.ronda);
 				p.setPosition(getCell(future));
 				//notifyChange();
 			} else if(future==null) {
-				//System.out.println("Posiçao de destino out of bounds para o player: "+p.getIdentification()+"!"); 
-			} else{
+				System.out.println("Posiçao de destino out of bounds para o player: "+p.getIdentification()+"!\n"); 
+			} else if(getCell(future).isOcupied()){
 				// fight se o jogador esta vivo, ainda nao venceu e nao esta sleeping
 				Player futuroP=getCell(future).getPlayer();
 				if (futuroP.isAlive() && !futuroP.won && !futuroP.isSleeping()){
 					fight(p,getCell(future).getPlayer());
 				}else {// apenas os phoneys ficam presos (ignora movimento)
 					if(p instanceof PhoneyHumanPlayer) {
-//						p.th.sleep(REFRESH_INTERVAL); 
-						//System.out.println("Phoney "+p.getIdentification()+" got stuck");
+						p.lock();
+						p.th.sleep(REFRESH_INTERVAL); 
+//						System.out.println("Phoney "+p.getIdentification()+" got blocked");
 					}
 				}
 			}
@@ -144,6 +148,7 @@ public class Game extends Observable {
 		//System.out.println("Player "+p.getIdentification()+" apenas mexe em "+(p.originalStrength-p.ronda%p.originalStrength)+" rondas");
 		} 	
 		p.ronda++;
+		notifyChange();
 	}
 
 	private synchronized void fight(Player a, Player b) {

@@ -5,6 +5,7 @@ import java.util.Observer;
 import game.Game;
 import game.PhoneyHumanPlayer;
 import game.Player;
+import game.Unblocker;
 import game.HumanPlayer;
 
 import javax.swing.JFrame;
@@ -43,9 +44,12 @@ public class GameGuiMain implements Observer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+//		Unblocker u= new Unblocker(game);
+//		u.th.start();
 		Player p= new HumanPlayer(90,game);
 		game.human=(HumanPlayer) p;
 		p.th.start();
+//		p.th.notify();
 		System.out.println("Jogador Humano "+p.getIdentification()+" lancado com sucesso\n\n");
 		for (int i = 0; i<NUMBER_PLAYERS; i++) { 
 			p=new PhoneyHumanPlayer((i+1), game);
