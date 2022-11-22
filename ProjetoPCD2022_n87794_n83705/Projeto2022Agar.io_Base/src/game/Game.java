@@ -12,7 +12,7 @@ public class Game extends Observable {
 
 	public static final int DIMY = 30;
 	public static final int DIMX = 30;
-	private static final int NUM_PLAYERS = 90;
+	private static final int NUM_PLAYERS = 100;
 	private static final int NUM_FINISHED_PLAYERS_TO_END_GAME=3;
 
 	public static final long REFRESH_INTERVAL = 400;
@@ -21,12 +21,12 @@ public class Game extends Observable {
 	public static final long INITIAL_WAITING_TIME = 10000;
 
 	protected Cell[][] board;
+	public int finished;
 	public Direction keyD;
+	public ArrayList<Player> players= new ArrayList<Player>();
+	public ArrayList<Thread> threads= new ArrayList<Thread>();
 	//humano teste
 	public HumanPlayer human;
-	public int finished;
-
-
 
 	public Game() {
 		board = new Cell[Game.DIMX][Game.DIMY];
@@ -35,14 +35,28 @@ public class Game extends Observable {
 			for (int y = 0; y < Game.DIMY; y++) 
 				board[x][y] = new Cell(new Coordinate(x, y),this);
 		
-		Unblocker u= new Unblocker(this);
-		u.th.start();
+		//Unblocker u= new Unblocker(this);
+		//u.th.start();
 	}
 
 	/** 
 	 * @param p - player
 	 * @throws InterruptedException
 	 */
+	public void addPlayers() {
+		Player p= new HumanPlayer(0,this);
+		this.human=(HumanPlayer) p;
+		p.th.start();
+		for (int i = 0; i<NUM_PLAYERS; i++) { 
+			p=new PhoneyHumanPlayer((i+1), this);
+			players.add(p);
+			threads.add(p.th);
+		}
+		for (Thread thread : threads) {
+			thread.start();
+        }
+	}
+
 	public void playerAdded(Player p) {
 		// To update GUI 
 		notifyChange();
@@ -56,6 +70,7 @@ public class Game extends Observable {
 					this.board[x][y].getPlayer().death();
 			}
 		}
+		notifyChange();
 	} 
 
 	public Cell getCell(Coordinate at) {
@@ -75,8 +90,8 @@ public class Game extends Observable {
 		return newCell; 
 	}
 
-	public synchronized void move(Player p) throws InterruptedException {
-		if(!p.won && p.isAlive()){
+	public void move(Player p) throws InterruptedException {
+		if(!p.won && p.playerIsAlive()){
 			// gerar a direcao pa mover se nao tiver ganho e tiver vivo
 			if(!p.isHumanPlayer()) {
 				Direction[] hipoteses = { Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT };
@@ -90,11 +105,11 @@ public class Game extends Observable {
 				p.next=keyD;
 			}
 			moveTo(p, p.next);
-//			notifyChange();
+			notifyChange();
 		}
 	}
 
-	public synchronized void moveTo(Player p, Direction direction) throws InterruptedException { 
+	public void moveTo(Player p, Direction direction) throws InterruptedException { 
 		if (p.ronda%p.originalStrength==0) {
 			Coordinate future = null; 
 			Coordinate pre= p.getPosition();
@@ -130,15 +145,15 @@ public class Game extends Observable {
 				p.setPosition(getCell(future));
 				//notifyChange();
 			} else if(future==null) {
-				System.out.println("Posiçao de destino out of bounds para o player: "+p.getIdentification()+"!\n"); 
+				//System.out.println("Posiçao de destino out of bounds para o player: "+p.getIdentification()+"!\n"); 
 			} else if(getCell(future).isOcupied()){
 				// fight se o jogador esta vivo, ainda nao venceu e nao esta sleeping
 				Player futuroP=getCell(future).getPlayer();
-				if (futuroP.isAlive() && !futuroP.won && !futuroP.isSleeping()){
-					fight(p,getCell(future).getPlayer());
+				if (futuroP.playerIsAlive() && !futuroP.won && !futuroP.isSleeping()){
+					fight(p,futuroP); 
 				}else {// apenas os phoneys ficam presos (ignora movimento)
 					if(p instanceof PhoneyHumanPlayer) {
-						p.lock();
+//						p.lock();
 						p.th.sleep(REFRESH_INTERVAL); 
 //						System.out.println("Phoney "+p.getIdentification()+" got blocked");
 					}
@@ -148,10 +163,9 @@ public class Game extends Observable {
 		//System.out.println("Player "+p.getIdentification()+" apenas mexe em "+(p.originalStrength-p.ronda%p.originalStrength)+" rondas");
 		} 	
 		p.ronda++;
-		notifyChange();
 	}
 
-	private synchronized void fight(Player a, Player b) {
+	private void fight(Player a, Player b) {
 		System.out.println("\n"+a.getIdentification()+" entrou em confronto contra "+b.getIdentification()+ " - ronda "+ a.ronda);
 		if (a.getCurrentStrength()==b.getCurrentStrength()) {
 			int i= (int) Math.random()*2;
