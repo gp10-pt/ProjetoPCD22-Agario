@@ -29,6 +29,7 @@ public abstract class Player implements Runnable {
 	public final byte win = (byte) 10;
 
 	public Thread th;
+	public Unblocker u;
 
 	// TODO: get player position from data in game
 	public Cell getCurrentCell() {
@@ -172,17 +173,17 @@ public abstract class Player implements Runnable {
 		}		
 	}
 	
-/*	public synchronized void lock() throws InterruptedException {
+	public synchronized void lock() throws InterruptedException {
 		this.isBlocked=true;
-		while(this.isBlocked()) {
+		if(this.isBlocked()) {
 			System.out.println("Player "+this.getIdentification()+" lockado ");
-			wait();
-//			notifyAll();
+			try{
+				th.sleep(2000);
+			} catch(InterruptedException e){
+				System.out.println("Sleep interrupted e nova tentativa move p player "+ this.getIdentification());
+			}
 		}
-//		System.out.println("XXXXXX");
-//		setUnblocked();
-		this.notify();	
-	}*/
+	}
 	
 	public void run(){	
 	//	synchronized(this) {
@@ -197,7 +198,9 @@ public abstract class Player implements Runnable {
 			System.out.print("---------- pronto a correr "+ id +"\n");
 			this.isSleeping=false;
 			for(;;) {
-				try {	
+				try {
+					u= new Unblocker(game,this);
+					u.th.start();
 					game.move(this);
 					checkWin();
 					th.sleep(this.game.REFRESH_INTERVAL);

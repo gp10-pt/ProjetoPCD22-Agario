@@ -35,8 +35,6 @@ public class Game extends Observable {
 			for (int y = 0; y < Game.DIMY; y++) 
 				board[x][y] = new Cell(new Coordinate(x, y),this);
 		
-		//Unblocker u= new Unblocker(this);
-		//u.th.start();
 	}
 
 	/** 
@@ -91,6 +89,7 @@ public class Game extends Observable {
 	}
 
 	public void move(Player p) throws InterruptedException {
+
 		if(!p.won && p.playerIsAlive()){
 			// gerar a direcao pa mover se nao tiver ganho e tiver vivo
 			if(!p.isHumanPlayer()) {
@@ -139,10 +138,11 @@ public class Game extends Observable {
 					break;
 				}
 				}
-				// movimenta se pois a celula esta vazia e nao esta bloqueado
+				// movimenta se pois a celula esta vazia e nao esta bloqueado, terminando o Unblocker pois nao foi necessario
 			if(future!= null && !getCell(future).isOcupied()) {
 				//System.out.println(p.getIdentification() + " - destino: "+future.toString()+ " - ronda "+ p.ronda);
 				p.setPosition(getCell(future));
+				p.u.th.stop();
 				//notifyChange();
 			} else if(future==null) {
 				//System.out.println("Posiçao de destino out of bounds para o player: "+p.getIdentification()+"!\n"); 
@@ -150,12 +150,11 @@ public class Game extends Observable {
 				// fight se o jogador esta vivo, ainda nao venceu e nao esta sleeping
 				Player futuroP=getCell(future).getPlayer();
 				if (futuroP.playerIsAlive() && !futuroP.won && !futuroP.isSleeping()){
-					fight(p,futuroP); 
-				}else {// apenas os phoneys ficam presos (ignora movimento)
+					fight(p,futuroP);
+					p.u.th.stop(); 
+				}else {// apenas os phoneys ficam presos (espera q o Unblocker interrompa o sleep e continua o Player.run)
 					if(p instanceof PhoneyHumanPlayer) {
-//						p.lock();
-						p.th.sleep(REFRESH_INTERVAL); 
-//						System.out.println("Phoney "+p.getIdentification()+" got blocked");
+						p.lock();
 					}
 				}
 			}

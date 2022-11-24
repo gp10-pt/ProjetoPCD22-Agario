@@ -35,7 +35,7 @@ public class Cell {
 	public synchronized void removePlayer() {
 		synchronized(this){
 			this.player= null;
-			this.notify();
+			this.notifyAll();
 		}
 	}
 	
