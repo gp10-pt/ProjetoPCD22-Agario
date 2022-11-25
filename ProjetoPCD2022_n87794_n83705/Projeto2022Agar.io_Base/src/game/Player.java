@@ -164,9 +164,8 @@ public abstract class Player implements Runnable {
 			this.currentStrength=(byte) win;
 			this.won=true;
 			System.out.println("Player "+this.getIdentification()+" chegou à energia maxima E VENCEU !!\n----_----_----_----_----_----_----_----_----_\n");
-			//ganhou
-			this.game.finished++;
-			if(this.game.finished==3)
+			//incrementar contador e verificar se o end goal (3) foi atingido
+			if(this.game.winCondition.incrementAndGet()==3)
 				this.game.endGame();
 				th.stop();
 		}		
@@ -180,7 +179,7 @@ public abstract class Player implements Runnable {
 	}
 	
 	public void run(){	
-	//	synchronized(this) {
+		//synchronized(this) {
 			try {			
 				//sleep after add , se for lancado depois por ter sido bloqueado vai esperar 10segs antes da proxima jogada e n pode ser atacado
 				addPlayerToGame();

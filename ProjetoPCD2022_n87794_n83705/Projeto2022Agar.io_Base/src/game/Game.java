@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Observable;
 import environment.Cell;
 import environment.Coordinate;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Game extends Observable {
 
@@ -21,7 +22,7 @@ public class Game extends Observable {
 	public static final long INITIAL_WAITING_TIME = 10000;
 
 	protected Cell[][] board;
-	public int finished;
+	public AtomicInteger winCondition=new AtomicInteger();
 	public Direction keyD;
 	public ArrayList<Player> players= new ArrayList<Player>();
 	public ArrayList<Thread> threads= new ArrayList<Thread>();
@@ -30,7 +31,6 @@ public class Game extends Observable {
 
 	public Game() {
 		board = new Cell[Game.DIMX][Game.DIMY];
-		this.finished=0;
 		for (int x = 0; x < Game.DIMX; x++) 
 			for (int y = 0; y < Game.DIMY; y++) 
 				board[x][y] = new Cell(new Coordinate(x, y),this);

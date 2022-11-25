@@ -2,6 +2,7 @@ package gui;
 
 import java.util.Observable;
 import java.util.Observer;
+
 import game.Game;
 import game.PhoneyHumanPlayer;
 import game.Player;
@@ -14,7 +15,6 @@ public class GameGuiMain implements Observer {
 	private JFrame frame = new JFrame("pcd.io");
 	private BoardJComponent boardGui;
 	private Game game;
-//	private static final int NUMBER_PLAYERS =90;
 
 	public GameGuiMain() {
 		super();
