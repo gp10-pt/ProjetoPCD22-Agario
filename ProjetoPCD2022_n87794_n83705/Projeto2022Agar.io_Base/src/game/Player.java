@@ -179,7 +179,7 @@ public abstract class Player implements Runnable {
 	}
 	
 	public void run(){	
-		//synchronized(this) {
+		synchronized(this) {
 			try {			
 				//sleep after add , se for lancado depois por ter sido bloqueado vai esperar 10segs antes da proxima jogada e n pode ser atacado
 				addPlayerToGame();
@@ -196,14 +196,13 @@ public abstract class Player implements Runnable {
 					u.th.start();
 					game.move(this);
 					checkWin();
-					th.sleep(this.game.REFRESH_INTERVAL);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
 					System.out.println("Player "+this.getIdentification()+" sleep interrupted e nova tentativa de move");
 				}
 			}
-//		}
+		}
 	}
 }		
 

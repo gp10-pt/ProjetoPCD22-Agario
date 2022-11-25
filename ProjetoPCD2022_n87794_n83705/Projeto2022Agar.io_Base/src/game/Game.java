@@ -64,7 +64,7 @@ public class Game extends Observable {
 	public void endGame() {
 		for (int x = 0; x < DIMX; x++){
 			for (int y = 0; y < DIMY; y++){ 
-				if(this.board[x][y].isOcupied() && !this.board[x][y].getPlayer().won)
+				if(this.board[x][y].isOcupied() && this.board[x][y].getPlayer().playerIsAlive() && !this.board[x][y].getPlayer().won)
 					this.board[x][y].getPlayer().death();
 			}
 		}
@@ -161,7 +161,8 @@ public class Game extends Observable {
 			}
 		} else{
 		//System.out.println("Player "+p.getIdentification()+" apenas mexe em "+(p.originalStrength-p.ronda%p.originalStrength)+" rondas");
-		} 	
+		} 
+		p.th.sleep(REFRESH_INTERVAL);	
 		p.ronda++;
 	}
 
