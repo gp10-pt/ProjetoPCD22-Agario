@@ -21,16 +21,16 @@ public class Unblocker implements Runnable{
 		// TODO Auto-generated method stub
 		try {
 			th.sleep(2000);
-			if(p.isBlocked()){
+			if(p.isBlocked() && p.playerIsAlive()){
 				p.isBlocked=false;
-				System.out.println("Player "+p.getIdentification()+ " unblocked");
+				//System.out.println("Player "+p.getIdentification()+ " unblocked");
 				p.th.interrupt();
 				th.stop();
 			}		
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
-			System.out.println(e);
+			//System.out.println(e);
 		}
 	}
 	}

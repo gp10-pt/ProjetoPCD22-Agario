@@ -151,6 +151,7 @@ public class Game extends Observable {
 				Player futuroP=getCell(future).getPlayer();
 				if (futuroP.playerIsAlive() && !futuroP.won && !futuroP.isSleeping()){
 					fight(p,futuroP);
+					futuroP.setPosition(getCell(future));
 					p.u.th.stop(); 
 				}else {// apenas os phoneys ficam presos (espera q o Unblocker interrompa o sleep e continua o Player.run)
 					if(p instanceof PhoneyHumanPlayer) {

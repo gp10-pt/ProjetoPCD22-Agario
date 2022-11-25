@@ -156,7 +156,6 @@ public abstract class Player implements Runnable {
 		this.currentStrength=0;
 		this.isDead=true;
 		System.out.println("O jogador "+ this.getIdentification() + " morreu na ronda "+this.ronda+".\n#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|\n");
-		this.th.stop();
 	}	
 
 	//se o jogador chegar a energia maxima terminar o movimento e a thread
@@ -169,20 +168,15 @@ public abstract class Player implements Runnable {
 			this.game.finished++;
 			if(this.game.finished==3)
 				this.game.endGame();
-			th.stop();
+				th.stop();
 		}		
 	}
 	
 	public synchronized void lock() throws InterruptedException {
 		this.isBlocked=true;
-		if(this.isBlocked()) {
-			System.out.println("Player "+this.getIdentification()+" lockado ");
-			try{
-				th.sleep(2000);
-			} catch(InterruptedException e){
-				System.out.println("Sleep interrupted e nova tentativa move p player "+ this.getIdentification());
-			}
-		}
+		if(this.isBlocked())
+			th.sleep(2000);
+			//System.out.println("Player "+this.getIdentification()+" lockado ");
 	}
 	
 	public void run(){	
@@ -206,7 +200,8 @@ public abstract class Player implements Runnable {
 					th.sleep(this.game.REFRESH_INTERVAL);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					//e.printStackTrace();
+					System.out.println("Player "+this.getIdentification()+" sleep interrupted e nova tentativa de move");
 				}
 			}
 //		}
