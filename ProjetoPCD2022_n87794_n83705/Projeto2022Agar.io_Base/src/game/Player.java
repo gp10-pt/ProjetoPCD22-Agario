@@ -17,9 +17,11 @@ public abstract class Player implements Runnable {
 
 	private byte currentStrength;
 	protected byte originalStrength;
+	public boolean isBlocked=false;
 	private boolean isDead=false;
 	private boolean isSleeping=true;
 
+	private final Cell initialPos;
 	public Cell pos;
 	public Direction next;
 	public int ronda;
@@ -27,6 +29,7 @@ public abstract class Player implements Runnable {
 	public final byte win = (byte) 10;
 
 	public Thread th;
+	public Unblocker u;
 
 	// TODO: get player position from data in game
 	public Cell getCurrentCell() {
@@ -40,10 +43,11 @@ public abstract class Player implements Runnable {
 		byte strength= (byte) (1 + Math.random() * 3);
 		currentStrength=strength;
 		originalStrength=strength;
-		this.pos=pos;
+//		this.pos=pos;
+		this.initialPos=game.getRandomCell();
 		Thread p=new Thread(this);
 		this.th=p;
-		System.out.println("Sou o player " +id+" e tenho "+strength+" de força");
+		System.out.println("Sou o player " +id+" e tenho "+strength+" de forÃ§a");
 	}
 
 	public abstract boolean isHumanPlayer();
@@ -92,7 +96,7 @@ public abstract class Player implements Runnable {
 		return pos.getPosition();
 	}
 	
-	public boolean isAlive() {
+	public boolean playerIsAlive() {
 		return !this.isDead;
 	}
 	
@@ -107,22 +111,33 @@ public abstract class Player implements Runnable {
 		return this.isSleeping;
 	}
 
-	public void addPlayerToGame(){
-		Cell initialPos=this.game.getRandomCell();
-		//System.out.println("posicão original do player "+this.getIdentification()+": "+initialPos.getPosition().toString());
-		while(initialPos.isOcupied()){
-			if(!initialPos.getPlayer().isAlive()){	//se dead nao colocar o jogador
-				th.stop();
-				System.out.println("Jogador "+this.getIdentification()+" eliminado pois jogador morto esta na posicao");
-			}		
-			// se nao, esperar  a posicao fique livre e depois adicionar ao jogo ( COM WAIT )			
-			try {
-//				System.out.println("Posicao ja ocupada para player " + this.getIdentification()+" pelo Player "+initialPos.getPlayer().getIdentification());
-				th.sleep(game.REFRESH_INTERVAL);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}	
+	public synchronized boolean isBlocked(){
+		return this.isBlocked==true;
+	}
+	
+	public synchronized void setUnblocked() {
+		this.isBlocked=false;
+		System.out.println("Player "+this.getIdentification()+" unblocked!");
+		this.notify();
+	}
+	
+	public synchronized void addPlayerToGame(){
+		synchronized(initialPos) {
+		//System.out.println("posicÃ£o original do player "+this.getIdentification()+": "+initialPos.getPosition().toString());
+			while(initialPos.isOcupied()){
+				if(!initialPos.getPlayer().playerIsAlive()){	//se dead nao colocar o jogador
+					th.stop();
+					System.out.println("Jogador "+this.getIdentification()+" eliminado pois jogador morto esta na posicao");
+				}		
+				// se nao, esperar que a posicao fique livre e depois adicionar ao jogo
+				System.out.println("Posicao ja ocupada para player " + this.getIdentification()+" pelo Player "+initialPos.getPlayer().getIdentification());			
+				try {
+					initialPos.wait();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}	
+			}
 		}
 		initialPos.setPlayer(this);
 		this.setPosition(initialPos);
@@ -141,7 +156,6 @@ public abstract class Player implements Runnable {
 		this.currentStrength=0;
 		this.isDead=true;
 		System.out.println("O jogador "+ this.getIdentification() + " morreu na ronda "+this.ronda+".\n#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|\n");
-		this.th.stop();
 	}	
 
 	//se o jogador chegar a energia maxima terminar o movimento e a thread
@@ -149,36 +163,47 @@ public abstract class Player implements Runnable {
 		if (getCurrentStrength()>= (byte) win) {
 			this.currentStrength=(byte) win;
 			this.won=true;
-			System.out.println("Player "+this.getIdentification()+" chegou à energia maxima E VENCEU !!\n----_----_----_----_----_----_----_----_----_\n");
-			//ganhou
-			this.game.finished++;
-			if(this.game.finished==3)
+			System.out.println("Player "+this.getIdentification()+" chegou Ã  energia maxima E VENCEU !!\n----_----_----_----_----_----_----_----_----_\n");
+			//incrementar contador e verificar se o end goal (3) foi atingido
+			if(this.game.winCondition.incrementAndGet()==3)
 				this.game.endGame();
-			th.stop();
+				th.stop();
 		}		
 	}
 	
-	public void run(){		
-		try {			
-			//sleep after add , se for lancado depois por ter sido bloqueado vai esperar 10segs antes da proxima jogada nao sei se é suposto
-			addPlayerToGame();		
-			th.sleep(4000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.out.print("pronto a correr "+ id +"\n");
-		this.isSleeping=false;	
-		for(;;){
-			try {
-				game.move(this);
-				checkWin();
-				th.sleep(this.game.REFRESH_INTERVAL);
+	public synchronized void lock() throws InterruptedException {
+		this.isBlocked=true;
+		if(this.isBlocked())
+			th.sleep(2000);
+			//System.out.println("Player "+this.getIdentification()+" lockado ");
+	}
+	
+	public void run(){	
+		synchronized(this) {
+			try {			
+				//sleep after add , se for lancado depois por ter sido bloqueado vai esperar 10segs antes da proxima jogada e n pode ser atacado
+				addPlayerToGame();
+				th.sleep(10000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			System.out.print("---------- pronto a correr "+ id +"\n");
+			this.isSleeping=false;
+			for(;;) {
+				try {
+					u= new Unblocker(game,this);
+					u.th.start();
+					game.move(this);
+					checkWin();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					//e.printStackTrace();
+					System.out.println("Player "+this.getIdentification()+" sleep interrupted e nova tentativa de move");
+				}
+			}
 		}
-	}		
-}
+	}
+}		
+
 

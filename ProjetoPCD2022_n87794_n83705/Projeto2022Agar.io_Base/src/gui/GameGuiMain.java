@@ -2,9 +2,11 @@ package gui;
 
 import java.util.Observable;
 import java.util.Observer;
+
 import game.Game;
 import game.PhoneyHumanPlayer;
 import game.Player;
+import game.Unblocker;
 import game.HumanPlayer;
 
 import javax.swing.JFrame;
@@ -13,7 +15,6 @@ public class GameGuiMain implements Observer {
 	private JFrame frame = new JFrame("pcd.io");
 	private BoardJComponent boardGui;
 	private Game game;
-	private static final int NUMBER_PLAYERS =100;
 
 	public GameGuiMain() {
 		super();
@@ -43,15 +44,7 @@ public class GameGuiMain implements Observer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Player p= new HumanPlayer(90,game);
-		game.human=(HumanPlayer) p;
-		p.th.start();
-		System.out.println("Jogador Humano "+p.getIdentification()+" lancado com sucesso\n\n");
-		for (int i = 0; i<NUMBER_PLAYERS; i++) { 
-			p=new PhoneyHumanPlayer((i+1), game);
-			p.th.start();
-			//System.out.println("Jogador "+(i+1)+" lancado com sucesso");
-		}
+		game.addPlayers();
 	}
 
 	@Override
