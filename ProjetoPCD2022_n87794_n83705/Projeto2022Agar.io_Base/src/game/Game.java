@@ -16,17 +16,20 @@ public class Game extends Observable {
 	public static final int DIMY = 30;
 	public static final int DIMX = 30;
 	private static final int NUM_PLAYERS = 100;
+	private static final int NUM_HUMANS = 5;
 	private static final int NUM_FINISHED_PLAYERS_TO_END_GAME=3;
 
 	public static final long REFRESH_INTERVAL = 400;
 	public static final double MAX_INITIAL_STRENGTH = 3;
+	public static final double MAX_INITIAL_STRENGTH_HUMANS = 5;
 	public static final long MAX_WAITING_TIME_FOR_MOVE = 2000;
 	public static final long INITIAL_WAITING_TIME = 10000;
 
 	protected Cell[][] board;
-	public AtomicInteger winCondition=new AtomicInteger();
+	public AtomicInteger winCondition= new AtomicInteger();
 	public Direction keyD;
 	public ArrayList<Player> players= new ArrayList<Player>();
+	public ArrayList<Player> humans= new ArrayList<Player>();
 	public ArrayList<Thread> threads= new ArrayList<Thread>();
 	//humano teste
 	public HumanPlayer human;
@@ -44,10 +47,13 @@ public class Game extends Observable {
 	 * @throws InterruptedException
 	 */
 	public void addPlayers() {
-		Player p= new HumanPlayer(0,this);
-		this.human=(HumanPlayer) p;
-		p.th.start();
-		for (int i = 0; i<NUM_PLAYERS; i++) { 
+		Player p;
+		//start dos humanos com lançamento do cliente q vai falar com o server p se ligar
+		for(int i=0; i<NUM_HUMANS; i++){
+			p= new HumanPlayer(i,this);
+			humans.add(p);
+		}
+		for (int i = NUM_HUMANS; i<NUM_HUMANS+NUM_PLAYERS; i++) { 
 			p=new PhoneyHumanPlayer((i+1), this);
 			players.add(p);
 			threads.add(p.th);

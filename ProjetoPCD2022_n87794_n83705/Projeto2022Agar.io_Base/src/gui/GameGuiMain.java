@@ -11,10 +11,13 @@ import game.HumanPlayer;
 
 import javax.swing.JFrame;
 
+import Server.Server;
+
 public class GameGuiMain implements Observer {
 	private JFrame frame = new JFrame("pcd.io");
 	private BoardJComponent boardGui;
 	private Game game;
+	private Server servidor;
 
 	public GameGuiMain() {
 		super();
@@ -44,6 +47,8 @@ public class GameGuiMain implements Observer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		//start do servidor que fica a esperar e add de todos os jogadores
+		servidor= new Server(8080,this);
 		game.addPlayers();
 	}
 

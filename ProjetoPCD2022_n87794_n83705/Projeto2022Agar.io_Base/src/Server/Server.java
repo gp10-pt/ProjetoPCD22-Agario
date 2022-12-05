@@ -5,22 +5,37 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import gui.GameGuiMain;
+
 import static java.lang.Integer.parseInt;
 
 public class Server {
 	private final int PORT;
+	private GameGuiMain ui;
 	private ObjectInputStream objIn;
 	private ObjectOutputStream objOut;
 //	private public ArrayList<> players;
 	
-	public Server (int port) {
+	public Server (int port, GameGuiMain ggm) {
 		this.PORT=port;
+		this.ui=ggm;
+		try {
+			runS();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void runS() throws IOException, ClassNotFoundException {
-		ServerSocket sSocket= new ServerSocket( PORT);
+		ServerSocket sSocket= new ServerSocket(PORT);
 		int i =0;
 		System.out.println("\n-»\n-»\n-»\n-»\n-»\nServidor a correr no porto "+PORT+"\n«-\n«-\n");
+		//espera pelo pedido de ligacao dos clientes e lança a thread autonoma p tratar do jogador
 		while(!sSocket.isClosed()) {
 			Socket socket= sSocket.accept();
 			new ServerThread(socket).start();
@@ -29,9 +44,5 @@ public class Server {
 		sSocket.close();
 	}
 
-	public static void main(String[] args) throws IOException, ClassNotFoundException {
-		// TODO Auto-generated method stub
-		new Server(parseInt(args[0])).runS();
-	}
 
 }

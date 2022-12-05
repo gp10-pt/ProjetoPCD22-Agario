@@ -20,36 +20,8 @@ public class Client implements KeyListener{
     private BufferedReader br;
 	private String gps="P  B\na  i\nu  g\n"; //string com a indicaçao do caminho desejado 
     
-	public Client (int port, String up, String left, String down, String right) {
+	public Client (InetAddress address, int port, String up, String left, String down, String right) {
 		System.out.println("as teclas selecionadas sao:\n"+up+"\n"+left+"\n"+down+"\n"+right+"\n");
-		KeyListener kl = new KeyListener() {
-			public void keyPressed(KeyEvent e) {
-				switch (e.getKeyCode()) {
-				case KeyEvent.VK_LEFT:
-					gps = "CIMA";
-					System.out.println("up "+gps);
-					break;
-				case KeyEvent.VK_RIGHT:
-					gps = "ESQUERDA";
-					System.out.println("left "+gps);
-					break;
-				case KeyEvent.VK_UP:
-					gps = "BAIXO";
-					System.out.println("down "+gps);
-					break;
-				case KeyEvent.VK_DOWN:
-					gps = "DIREITA";
-					System.out.println("right "+gps);
-					break;
-				}
-			}
-
-			@Override
-			public void keyTyped(KeyEvent e) {}
-
-			@Override
-			public void keyReleased(KeyEvent e) {}
-		};
 		try {
 			this.connectToGame();
 		} catch (IOException e) {
@@ -57,12 +29,7 @@ public class Client implements KeyListener{
 			e.printStackTrace();
 		}
 	}
-	
-	public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException {
-		new Client(parseInt(args[0]),args[1],args[2],args[3],args[4]);
-//		while(!socket) void c key.Listener
 
-	}
 	public void connectToGame() throws IOException {
 		System.out.println("Cliente iniciado");
 		InetAddress address = InetAddress.getByName(null);
@@ -83,15 +50,16 @@ public class Client implements KeyListener{
 	public void keyPressed(KeyEvent e) {
 		switch (e.getKeyCode()) {
 		case KeyEvent.VK_LEFT:
-			this.gps = "CIMA";
+			this.gps = "ESQUERDA";
 			break;
 		case KeyEvent.VK_RIGHT:
-			this.gps = "ESQUERDA";break;
+			this.gps = "DIREITA";
+			break;
 		case KeyEvent.VK_UP:
-			this.gps = "BAIXO";
+			this.gps = "CIMA";
 			break;
 		case KeyEvent.VK_DOWN:
-			this.gps = "DIREITA";
+			this.gps = "BAIXO";
 			break;
 		}
 	}
@@ -106,6 +74,12 @@ public class Client implements KeyListener{
 	public void keyReleased(KeyEvent e) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException {
+		//new Client(parseInt(args[1],args[2],args[3],args[4],args[5]));
+//		while(!socket) void c key.Listener
+
 	}
 
 }
