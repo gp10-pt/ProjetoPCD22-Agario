@@ -5,32 +5,48 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import environment.Direction;
+import game.Game;
+import game.Player;
+
 public class ServerThread extends Thread {
 
 	Socket socket=null;
+	Server servidor=null;
+	private Game game;
 
-	ServerThread(Socket socket){
+	ServerThread(Socket socket, Server servidor){
 		this.socket=socket;
+		this.servidor=servidor;
+		game=servidor.ui.game;
 	}
 
 	public void run() {
 		// TODO Auto-generated method stub
-		Message msg = null;
+		Message msg = new Message();
+		System.out.println("ServerThread "+this.getId()+" lançada");
 		// a cada 400ms mandar update do jogo p client, client recebe e responde com informacao p server dar update do move
-		try{
-			System.out.println("ServerThread "+this.getId()+" lançada");
-			ObjectInputStream objIn = new ObjectInputStream(socket.getInputStream());
-			ObjectOutputStream objOut = new ObjectOutputStream(socket.getOutputStream());
-//			msg=new Message(update)
-			while ( (msg = (Message) objIn.readObject() ) != null) {
-//						mudar o atributo next na instancia do player no jogo
-//						
-//						objOut.writeObject (message); //resposta ao cliente
+		while(true){
+			try{			
+				ObjectOutputStream objOut = new ObjectOutputStream(socket.getOutputStream());
+				objOut.writeObject(servidor.ui);
+				ObjectInputStream objIn = new ObjectInputStream(socket.getInputStream());
+				//se cliente enviar end pois jogador está morto termina a ligacao senao executa o move do player
+				if(((String) objIn.readObject()) == "end"){
+					socket.close();
+				}
+				else{
+					msg=(Message) objIn.readObject();
+					//Direction next= ((Direction) msg.getDirection());
+					Player p=game.humans[msg.getPlayerId()];
+					p.next= ((Direction) msg.getDirection());
+					game.moveTo(p,p.next);	
+				}
+				sleep(game.REFRESH_INTERVAL); 
+			} catch (InterruptedException | IOException | ClassNotFoundException e) {
+				e.printStackTrace();
 			}
-			sleep(400); //fim da comunicação
-//		socket.close();
-		} catch (IOException | ClassNotFoundException | InterruptedException e) {
-			e.printStackTrace();
 		}
 	}
+	
 }

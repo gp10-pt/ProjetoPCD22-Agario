@@ -12,7 +12,7 @@ import static java.lang.Integer.parseInt;
 
 public class Server {
 	private final int PORT;
-	private GameGuiMain ui;
+	public GameGuiMain ui;
 	private ObjectInputStream objIn;
 	private ObjectOutputStream objOut;
 //	private public ArrayList<> players;
@@ -34,12 +34,13 @@ public class Server {
 	public void runS() throws IOException, ClassNotFoundException {
 		ServerSocket sSocket= new ServerSocket(PORT);
 		int i =0;
-		System.out.println("\n-»\n-»\n-»\n-»\n-»\nServidor a correr no porto "+PORT+"\n«-\n«-\n");
+		System.out.println("\n-»\n-»\nServidor a correr no porto "+PORT+"\n«-\n«-\n");
 		//espera pelo pedido de ligacao dos clientes e lança a thread autonoma p tratar do jogador
 		while(!sSocket.isClosed()) {
 			Socket socket= sSocket.accept();
-			new ServerThread(socket).start();
-			System.out.println("Cliente "+i+" conectado");i++;
+			new ServerThread(socket,this).start();
+			System.out.println("Cliente "+i+" conectado");
+			i++;
 		}		
 		sSocket.close();
 	}

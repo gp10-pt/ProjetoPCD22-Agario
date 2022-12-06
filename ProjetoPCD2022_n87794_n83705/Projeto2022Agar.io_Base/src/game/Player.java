@@ -18,7 +18,7 @@ public abstract class Player implements Runnable {
 	private byte currentStrength;
 	protected byte originalStrength;
 	public boolean isBlocked=false;
-	private boolean isDead=false;
+	public boolean isDead=false;
 	private boolean isSleeping=true;
 
 	private final Cell initialPos;
@@ -123,7 +123,7 @@ public abstract class Player implements Runnable {
 	
 	public synchronized void addPlayerToGame(){
 		synchronized(initialPos) {
-		//System.out.println("posicÃ£o original do player "+this.getIdentification()+": "+initialPos.getPosition().toString());
+		//System.out.println("posicao original do player "+this.getIdentification()+": "+initialPos.getPosition().toString());
 			while(initialPos.isOcupied()){
 				if(!initialPos.getPlayer().playerIsAlive()){	//se dead nao colocar o jogador
 					th.stop();

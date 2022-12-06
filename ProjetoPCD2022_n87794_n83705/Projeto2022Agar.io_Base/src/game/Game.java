@@ -2,11 +2,13 @@ package game;
 import environment.Direction;
 import gui.BoardJComponent;
 import java.awt.Point;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import Server.Client;
 import environment.Cell;
 import environment.Coordinate;
 
@@ -29,7 +31,7 @@ public class Game extends Observable {
 	public AtomicInteger winCondition= new AtomicInteger();
 	public Direction keyD;
 	public ArrayList<Player> players= new ArrayList<Player>();
-	public ArrayList<Player> humans= new ArrayList<Player>();
+	public Player[] humans= new Player[NUM_HUMANS];
 	public ArrayList<Thread> threads= new ArrayList<Thread>();
 	//humano teste
 	public HumanPlayer human;
@@ -48,10 +50,14 @@ public class Game extends Observable {
 	 */
 	public void addPlayers() {
 		Player p;
-		//start dos humanos com lançamento do cliente q vai falar com o server p se ligar
+		//start dos humanos com lançamento do cliente q vai se ligar pelo server 
 		for(int i=0; i<NUM_HUMANS; i++){
 			p= new HumanPlayer(i,this);
-			humans.add(p);
+			humans[i]=p;
+			//iniciar client e dar set ao id do seu player
+			/*Client c= new Client(InetAddress.getByName(null), 8080, null, null, null, null)
+			c.setPlayer(i);			 
+			*/
 		}
 		for (int i = NUM_HUMANS; i<NUM_HUMANS+NUM_PLAYERS; i++) { 
 			p=new PhoneyHumanPlayer((i+1), this);

@@ -16,7 +16,7 @@ import Server.Server;
 public class GameGuiMain implements Observer {
 	private JFrame frame = new JFrame("pcd.io");
 	private BoardJComponent boardGui;
-	private Game game;
+	public Game game;
 	private Server servidor;
 
 	public GameGuiMain() {
