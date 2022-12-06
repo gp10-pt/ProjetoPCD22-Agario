@@ -47,7 +47,7 @@ public class GameGuiMain implements Observer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//start do servidor que fica a esperar e add de todos os jogadores
+		//start do servidor que fica a esperar o add de todos os jogadores
 		servidor= new Server(8080,this);
 		game.addPlayers();
 	}

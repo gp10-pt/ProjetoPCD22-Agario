@@ -60,7 +60,7 @@ public class Game extends Observable {
 			*/
 		}
 		for (int i = NUM_HUMANS; i<NUM_HUMANS+NUM_PLAYERS; i++) { 
-			p=new PhoneyHumanPlayer((i+1), this);
+			p=new PhoneyHumanPlayer(i, this);
 			players.add(p);
 			threads.add(p.th);
 		}

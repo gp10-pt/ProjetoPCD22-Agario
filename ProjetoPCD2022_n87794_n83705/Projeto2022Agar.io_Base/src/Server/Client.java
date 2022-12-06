@@ -13,31 +13,27 @@ import java.net.Socket;
 import environment.Direction;
 import game.Game;
 
-public class Client extends Thread implements KeyListener {
+public class Client /*extends Thread*/ implements KeyListener {
 
-	private int player;
-	private Socket socket;
-	private ObjectOutputStream out;
-	private Game game;
-	private Direction gps=null; 
-    
-	/* da fix ao server com o main que tinhas que mudei isso sem querer 
-	transformei isto numa thread mas n sei se é o melhor, ve essa cena das teclas nos arguments p tentar dar start no game
-	acho q para termos a direcao aqui precisamos de por no BoardJComponent como veio original para usar o getLastPressedDirection() e clearLastPressedDirection()
-	aqui no cliente quando queremos escrever a mensagem , pergunta ao stor disso
-	*/
+	private static int player;
+	private static Socket socket;
+	private static Game game;
+	private static Direction gps=null;
+	private static InetAddress address;
+	private static int port;
 
+	//cria client e conecta ao jogo
 	public Client (InetAddress address, int port, String up, String left, String down, String right) {
+		this.address=address;
+		this.port=port;
 		//System.out.println("as teclas selecionadas sao:\n"+up+"\n"+left+"\n"+down+"\n"+right+"\n");
 		try {
 			connectToGame(address,port);
-			run();
 		} catch (IOException | ClassNotFoundException e) {
 			System.out.println("Falha no lancamento );\n");
 			e.printStackTrace();
 		}
-		//quando run termina é porque player está morto por isso termina se o cliente
-		this.stop();
+		
 	}
 
 	//para o cliente saber qual player está a controlar(, feito on launch pelo game ?)
@@ -53,20 +49,22 @@ public class Client extends Thread implements KeyListener {
 	}
 
 	//processo de rececao do game do servidor e envio de mensagem mensagem com informacao necessaria p move (player e direcao)
-	@Override
-	public void run(){
+	//@Override
+	public static void main(String[] args){
 		// TODO Auto-generated method stub
+		ObjectOutputStream out;
 		ObjectInputStream in;
 		while(true){
 			try {
 				//client recebe o game do servidor
+				System.out.println("Waiting for game info");
 				in = new ObjectInputStream(socket.getInputStream());
 				game= (Game) in.readObject();
+				System.out.println("Client received game info!");
 				//se player está morto, mata a ligacao com o server
 				if(game.humans[player].isDead){
 					out = new ObjectOutputStream(socket.getOutputStream());
 					out.writeObject("end");
-					//socket.close();
 					break;
 				}
 				//mensagem com informacao necessaria p move (player e direcao)
@@ -75,11 +73,20 @@ public class Client extends Thread implements KeyListener {
 				msg.setPlayerId(player); 
 				out = new ObjectOutputStream(socket.getOutputStream());
 				out.writeObject(msg);
+				System.out.println("Client sent move info!");
 				out.close();
+				in.close();
 			} catch (IOException | ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+		//se jogador morto fim do run com close da socket
+		try {
+			socket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
