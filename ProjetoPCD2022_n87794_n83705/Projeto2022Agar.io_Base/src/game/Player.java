@@ -38,16 +38,24 @@ public abstract class Player implements Runnable {
 
 	public Player(int id, Game game) {
 		super();
+		
+		byte strength;
 		this.id = id;
 		this.game=game;
-		byte strength= (byte) (1 + Math.random() * 3);
+		if(!this.isHumanPlayer()){
+			strength= (byte) (1 + Math.random() * 3);
+			Thread p=new Thread(this);
+			this.th=p;
+		}
+		//strength para humanos
+		else{
+			strength=(byte) 5;
+		}
 		currentStrength=strength;
 		originalStrength=strength;
-//		this.pos=pos;
 		this.initialPos=game.getRandomCell();
-		Thread p=new Thread(this);
-		this.th=p;
-		System.out.println("Sou o player " +id+" e tenho "+strength+" de forÃ§a");
+		
+		System.out.println("Sou o player " +id+" e tenho "+originalStrength+" de forÃ§a");
 	}
 
 	public abstract boolean isHumanPlayer();

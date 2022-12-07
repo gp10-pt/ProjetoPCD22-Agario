@@ -3,6 +3,7 @@ import environment.Direction;
 import gui.BoardJComponent;
 import java.awt.Point;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
@@ -17,21 +18,21 @@ public class Game extends Observable {
 	
 	public static final int DIMY = 30;
 	public static final int DIMX = 30;
-	private static final int NUM_PLAYERS = 100;
-	private static final int NUM_HUMANS = 5;
-	private static final int NUM_FINISHED_PLAYERS_TO_END_GAME=3;
+	private final int NUM_PLAYERS = 100;
+	public final int NUM_HUMANS = 5;
+	private final int NUM_FINISHED_PLAYERS_TO_END_GAME=3;
 
-	public static final long REFRESH_INTERVAL = 400;
-	public static final double MAX_INITIAL_STRENGTH = 3;
-	public static final double MAX_INITIAL_STRENGTH_HUMANS = 5;
-	public static final long MAX_WAITING_TIME_FOR_MOVE = 2000;
-	public static final long INITIAL_WAITING_TIME = 10000;
+	public final long REFRESH_INTERVAL = 400;
+	public final double MAX_INITIAL_STRENGTH = 3;
+	public final double MAX_INITIAL_STRENGTH_HUMANS = 5;
+	public final long MAX_WAITING_TIME_FOR_MOVE = 2000;
+	public final long INITIAL_WAITING_TIME = 10000;
 
 	protected Cell[][] board;
 	public AtomicInteger winCondition= new AtomicInteger();
 	public Direction keyD;
 	public ArrayList<Player> players= new ArrayList<Player>();
-	public Player[] humans= new Player[NUM_HUMANS];
+	public ArrayList<Player> humans= new ArrayList<Player>();
 	public ArrayList<Thread> threads= new ArrayList<Thread>();
 	//humano teste
 	public HumanPlayer human;
@@ -46,20 +47,21 @@ public class Game extends Observable {
 
 	/** 
 	 * @param p - player
+	 * @throws UnknownHostException
 	 * @throws InterruptedException
 	 */
-	public void addPlayers() {
+
+	public void addHuman(Player p, int id) throws UnknownHostException {
+		//start dos humanos com lançamento do cliente q vai se ligar pelo server 
+		humans.add(p);
+		p= new HumanPlayer(id, this);
+		p.addPlayerToGame();
+	}
+
+	public void addPhoneys() throws UnknownHostException {
 		Player p;
 		//start dos humanos com lançamento do cliente q vai se ligar pelo server 
-		for(int i=0; i<NUM_HUMANS; i++){
-			p= new HumanPlayer(i,this);
-			humans[i]=p;
-			//iniciar client e dar set ao id do seu player
-			/*Client c= new Client(InetAddress.getByName(null), 8080, null, null, null, null)
-			c.setPlayer(i);			 
-			*/
-		}
-		for (int i = NUM_HUMANS; i<NUM_HUMANS+NUM_PLAYERS; i++) { 
+		for (int i = NUM_HUMANS; i!=NUM_HUMANS+NUM_PLAYERS; i++) { 
 			p=new PhoneyHumanPlayer(i, this);
 			players.add(p);
 			threads.add(p.th);

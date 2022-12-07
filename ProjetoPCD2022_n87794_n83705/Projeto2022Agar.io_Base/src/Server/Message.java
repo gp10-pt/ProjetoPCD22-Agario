@@ -8,9 +8,6 @@ public class Message implements Serializable {
     private Direction direction;
     private int id;
 
-   // public Message(){
-   // }
-
     public void setDirection(Direction dir){
         this.direction=dir;
     }
