@@ -10,24 +10,27 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import environment.Direction;
 import game.Game;
 import game.Player;
 
-public class Client /*extends Thread*/ implements KeyListener {
+public class Client implements KeyListener {
 
 	private int player;
 	private Socket socket;
-	private static Game game;
 	private Direction gps=null;
 	private InetAddress address;
 	private int port;
+	private boolean alternateKeys;
 
 	//cria client e conecta ao jogo
-	public Client (InetAddress address, int port, String up, String left, String down, String right) {
+	public Client (InetAddress address, int port, boolean alternateKeys, int playerId) {
 		this.address=address;
 		this.port=port;
+		this.alternateKeys=alternateKeys;
+		setPlayer(playerId);
 		try {
 			//conexao cliente servidor
 			connectToGame(address,port);
@@ -48,29 +51,31 @@ public class Client /*extends Thread*/ implements KeyListener {
 	public void connectToGame(InetAddress address, int port) throws IOException, ClassNotFoundException,InterruptedException{
 		//System.out.println("Cliente iniciado");
 		this.socket = new Socket(address, port);
-		System.out.println("Client "+player+"conectado a socket: "+socket.getPort());
-		//envio mensagem com id do player do cliente para add ao jogo
+		System.out.println("Client "+player+" conectado a socket: "+socket.getPort());
+		//envio mensagem com id do player do cliente para add ao jogo pelo server
 		ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());;
-		Message msg= new Message();
-		msg.setPlayerId(player);	
+		Message msg= new Message(player);
 		out.writeObject(msg);
 	}
 	
 	public void communication(){
+		ArrayList<Player> players;
 		ObjectOutputStream out;
 		ObjectInputStream in;
 		while(true){
 			try {
-				//client recebe o game do servidor
-				System.out.println("\n"+player +" waiting for game info");
+				//client recebe a game info (lista de humanos) do servidor
+				System.out.println("\nClient "+player +" waiting for game info");
 				in = new ObjectInputStream(socket.getInputStream());
-				game= (Game) in.readObject();
-				System.out.println("Client "+player+" received game info!");
+				Message m= (Message) in.readObject();
+				players=m.getList();
+				System.out.println("Client "+player+" received game info!\n");
 				//se player está morto, mata a ligacao com o server
-				for(Player p :game.humans){
+				for(Player p :players){
 					if(p.getIdentification()==player && p.isDead){
 						out = new ObjectOutputStream(socket.getOutputStream());
-						out.writeObject("end");
+						Message msg= new Message("end");
+						out.writeObject(msg);
 						try {
 							socket.close();
 						} catch (IOException e) {
@@ -81,9 +86,7 @@ public class Client /*extends Thread*/ implements KeyListener {
 					}
 				}
 				//mensagem com informacao necessaria p move (player e direcao)
-				Message msg= new Message();
-				msg.setDirection(getLastPressedDirection());	
-				msg.setPlayerId(player); 
+				Message msg= new Message(player,getLastPressedDirection());
 				out = new ObjectOutputStream(socket.getOutputStream());
 				out.writeObject(msg);
 				System.out.println("Client "+player+" sent move info!");
@@ -98,20 +101,38 @@ public class Client /*extends Thread*/ implements KeyListener {
 		}
 	}
 
+	@Override
 	public void keyPressed(KeyEvent e) {
-		switch (e.getKeyCode()) {
-			case KeyEvent.VK_LEFT :
-				gps=environment.Direction.LEFT; System.out.println("left");
-				break;
-			case KeyEvent.VK_RIGHT:
-				gps=environment.Direction.RIGHT; System.out.println("right");
-				break;
-			case KeyEvent.VK_UP:
-				gps=environment.Direction.UP; System.out.println("up");
-				break;
-			case KeyEvent.VK_DOWN:
-				gps=environment.Direction.DOWN; System.out.println("down");
-				break;
+		if(alternateKeys){
+			switch (e.getKeyCode()) {
+				case KeyEvent.VK_A:
+					gps=environment.Direction.LEFT; System.out.println("left");
+					break;
+				case KeyEvent.VK_D:
+					gps=environment.Direction.RIGHT; System.out.println("right");
+					break;
+				case KeyEvent.VK_W:
+					gps=environment.Direction.UP; System.out.println("up");
+					break;
+				case KeyEvent.VK_S:
+					gps=environment.Direction.DOWN; System.out.println("down");
+					break;
+			}
+		} else{
+			switch(e.getKeyCode()){
+				case KeyEvent.VK_LEFT :
+					gps=environment.Direction.LEFT; System.out.println("left");
+					break;
+				case KeyEvent.VK_RIGHT:
+					gps=environment.Direction.RIGHT; System.out.println("right");
+					break;
+				case KeyEvent.VK_UP:
+					gps=environment.Direction.UP; System.out.println("up");
+					break;
+				case KeyEvent.VK_DOWN:
+					gps=environment.Direction.DOWN; System.out.println("down");
+					break;
+				}
 		}
 	}
 
@@ -137,17 +158,17 @@ public class Client /*extends Thread*/ implements KeyListener {
 
 	//inicia NUM_HUMANS clientes para controlar os NUM_HUMANS humanos
 	public static void main(String[] args){
-		for(int i=0;i!=5;i++){
-			Client c=null;
-			try {
-				c=new Client(InetAddress.getLocalHost(),8080,"up","left","down","right");
-				c.setPlayer(i);
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		try {
+			Client c = new Client(InetAddress.getByName(null),8080,false,0);
+			Client c1 = new Client(InetAddress.getByName(null),8080,true,1);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
+		
 	}
+
 	
 	
 

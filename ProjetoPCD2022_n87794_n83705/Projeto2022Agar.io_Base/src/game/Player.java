@@ -1,6 +1,8 @@
 package game;
 
 
+import java.io.Serializable;
+
 import environment.Cell;
 import environment.Direction;
 import environment.Coordinate;
@@ -8,7 +10,7 @@ import environment.Coordinate;
  * Represents a player.
  *
  */
-public abstract class Player implements Runnable {
+public abstract class Player implements Runnable, Serializable{
 
 
 	protected  Game game;
@@ -153,6 +155,13 @@ public abstract class Player implements Runnable {
 		game.playerAdded(this);
 	}
 
+	public void addHumanToGame(){
+		initialPos.setPlayer(this);
+		this.setPosition(initialPos);
+		// To update GUI 
+		game.playerAdded(this);
+	}
+
 	public void absorbs(Player s) {
 		this.currentStrength+=s.getCurrentStrength();
 		s.death();
@@ -185,6 +194,10 @@ public abstract class Player implements Runnable {
 			th.sleep(2000);
 			//System.out.println("Player "+this.getIdentification()+" lockado ");
 	}
+
+	public void setAwake() {
+		this.isSleeping=false;
+	}
 	
 	public void run(){	
 		synchronized(this) {
@@ -197,7 +210,7 @@ public abstract class Player implements Runnable {
 				e.printStackTrace();
 			}
 			System.out.print("---------- pronto a correr "+ id +"\n");
-			this.isSleeping=false;
+			setAwake();
 			for(;;) {
 				try {
 					u= new Unblocker(game,this);
@@ -212,6 +225,8 @@ public abstract class Player implements Runnable {
 			}
 		}
 	}
+
+	
 }		
 
 

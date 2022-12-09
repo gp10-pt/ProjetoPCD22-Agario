@@ -4,65 +4,65 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import environment.Direction;
 import game.Game;
 import game.Player;
-import game.Unblocker;
 
 public class ServerThread extends Thread {
 
 	Socket socket=null;
-	Server servidor=null;
 	private Game game;
+	public ArrayList<Player> humans= new ArrayList<Player>();
 
-	ServerThread(Socket socket, Server servidor){
+	ServerThread(Socket socket, Game game){
 		this.socket=socket;
-		this.servidor=servidor;
-		game=servidor.ui.game;
-	}
-
-	private void addPlayer(int id) throws InterruptedException, UnknownHostException{
-		for(Player p :game.humans){
-			if(p.getIdentification()==id){
-				game.addHuman(p, id);
-			}
-		}
-		//sleep de inicio de jogos
-		this.wait(10000);
+		this.game=game;
 	}
 
 	public void run() {
 		// TODO Auto-generated method stub
-		Message msg = new Message();
 		System.out.println("ServerThread "+this.getId()+" lançada");
 		//cliente envia id do seu player ao conectar se com o server, é lido e player é adicionado ao jogo 
 		try{
 			ObjectInputStream objIn = new ObjectInputStream(socket.getInputStream());
-			msg=(Message) objIn.readObject();
+			Message msg=(Message) objIn.readObject();
+			//playerId é lido e human player com esse id é adicionado ao jogo 
 			int id=msg.getPlayerId();
-			addPlayer(id);
+			game.addHuman(id);
+			this.humans=game.humans;
+			//sleep de inicio de jogo
+			sleep(10000);
+			for(Player p :humans){
+				if(p.getIdentification()==id){
+					p.setAwake();
+				}
+			}
+			System.out.print("---------- pronto a correr "+ id +"\n");
 		} catch (InterruptedException | IOException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 		//mandar update do jogo p client, client recebe e responde com informacao p server dar update do move
 		while(true){
 			try{			
+				this.humans=game.humans;
 				ObjectOutputStream objOut = new ObjectOutputStream(socket.getOutputStream());
-				objOut.writeObject(servidor.ui);
+				Message msg= new Message(humans);
+				objOut.writeObject(msg);
 				System.out.println("Server sent game info!");
 				ObjectInputStream objIn = new ObjectInputStream(socket.getInputStream());
+				msg= (Message) objIn.readObject();
 				//se cliente enviar end pois jogador está morto, termina a ligacao senao executa o move do player
-				if(((String) objIn.readObject()).equals("end")){
+				if(msg.getMsg().equals("end")){
 					socket.close();
 					break;
 				}
 				//update do move como acontece no player.run (falta o checkWin ainda)
 				else{
-					msg=(Message) objIn.readObject();
+					msg= (Message) objIn.readObject();
 					//Direction next= ((Direction) msg.getDirection());
-					for(Player p :game.humans){
+					for(Player p :humans){
 						if(p.getIdentification()==msg.getPlayerId()){
 							p.next= ((Direction) msg.getDirection());
 							System.out.println("Server received game info!");

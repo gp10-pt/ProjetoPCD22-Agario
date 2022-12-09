@@ -12,14 +12,12 @@ import game.HumanPlayer;
 
 import javax.swing.JFrame;
 
-import Server.Client;
 import Server.Server;
 
 public class GameGuiMain implements Observer {
 	private JFrame frame = new JFrame("pcd.io");
 	private BoardJComponent boardGui;
 	public Game game;
-	private Server servidor;
 
 	public GameGuiMain() {
 		super();
@@ -28,6 +26,14 @@ public class GameGuiMain implements Observer {
 
 		buildGui();
 
+	}
+
+	public GameGuiMain(Game g){
+		super();
+		game=g;
+		game.addObserver(this);
+
+		buildGui();
 	}
 
 	private void buildGui() {
@@ -40,19 +46,16 @@ public class GameGuiMain implements Observer {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
-
 	public void init()  {
 		frame.setVisible(true);
+
 		try {
 			Thread.sleep(3000);
 			game.addPhoneys();
-			//start do servidor que fica a esperar o add de todos os jogadores
-			servidor= new Server(8080,this);
 		} catch (InterruptedException | UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
 
 	@Override

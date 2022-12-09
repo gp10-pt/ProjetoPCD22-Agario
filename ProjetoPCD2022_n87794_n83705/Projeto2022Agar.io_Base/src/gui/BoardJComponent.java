@@ -104,16 +104,16 @@ public class BoardJComponent extends JComponent implements KeyListener {
 	public void keyPressed(KeyEvent e) { 
 		switch(e.getKeyCode()){
 		case KeyEvent.VK_LEFT :
-			game.keyD=environment.Direction.LEFT; System.out.println("left");
+			lastPressedDirection=environment.Direction.LEFT; System.out.println("left");
 			break;
 		case KeyEvent.VK_RIGHT:
-			game.keyD=environment.Direction.RIGHT; System.out.println("right");
+			lastPressedDirection=environment.Direction.RIGHT; System.out.println("right");
 			break;
 		case KeyEvent.VK_UP:
-			game.keyD=environment.Direction.UP; System.out.println("up");
+			lastPressedDirection=environment.Direction.UP; System.out.println("up");
 			break;
 		case KeyEvent.VK_DOWN:
-			game.keyD=environment.Direction.DOWN; System.out.println("down");
+			lastPressedDirection=environment.Direction.DOWN; System.out.println("down");
 			break;
 		}
 	}
@@ -130,7 +130,7 @@ public class BoardJComponent extends JComponent implements KeyListener {
 	}
 
 	public Direction getLastPressedDirection() {
-		return game.keyD;
+		return lastPressedDirection;
 	}
 
 	public void clearLastPressedDirection() {

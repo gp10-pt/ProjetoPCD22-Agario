@@ -1,26 +1,20 @@
 package game;
 import environment.Direction;
-import gui.BoardJComponent;
-import java.awt.Point;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Observable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import Server.Client;
 import environment.Cell;
 import environment.Coordinate;
 
-public class Game extends Observable {
+public class Game extends Observable{
 
 	
 	public static final int DIMY = 30;
 	public static final int DIMX = 30;
 	private final int NUM_PLAYERS = 100;
-	public final int NUM_HUMANS = 5;
-	private final int NUM_FINISHED_PLAYERS_TO_END_GAME=3;
+	public final int NUM_HUMANS = 2;
 
 	public final long REFRESH_INTERVAL = 400;
 	public final double MAX_INITIAL_STRENGTH = 3;
@@ -34,8 +28,6 @@ public class Game extends Observable {
 	public ArrayList<Player> players= new ArrayList<Player>();
 	public ArrayList<Player> humans= new ArrayList<Player>();
 	public ArrayList<Thread> threads= new ArrayList<Thread>();
-	//humano teste
-	public HumanPlayer human;
 
 	public Game() {
 		board = new Cell[Game.DIMX][Game.DIMY];
@@ -51,11 +43,11 @@ public class Game extends Observable {
 	 * @throws InterruptedException
 	 */
 
-	public void addHuman(Player p, int id) throws UnknownHostException {
+	public void addHuman(int id) throws UnknownHostException {
 		//start dos humanos com lançamento do cliente q vai se ligar pelo server 
+		Player p= new HumanPlayer(id, this);
 		humans.add(p);
-		p= new HumanPlayer(id, this);
-		p.addPlayerToGame();
+		p.addHumanToGame();
 	}
 
 	public void addPhoneys() throws UnknownHostException {
@@ -78,6 +70,7 @@ public class Game extends Observable {
 	}
 	
 	public void endGame() {
+		System.out.println("\n-»\n-»\nFIM DO JOGO\n«-\n«-\n");
 		for (int x = 0; x < DIMX; x++){
 			for (int y = 0; y < DIMY; y++){ 
 				if(this.board[x][y].isOcupied() && this.board[x][y].getPlayer().playerIsAlive() && !this.board[x][y].getPlayer().won)
@@ -112,12 +105,6 @@ public class Game extends Observable {
 				Direction[] hipoteses = { Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT };
 				int d = (int) (Math.random() * hipoteses.length);
 				p.next=hipoteses[d];
-			}
-			//no caso de ser humano o objecto segue a indicaÃ§Ã£o das teclas, guardada no atributo next (nao implementado)
-			// mexer o player
-			else {
-				//			System.out.println("\nHumano a querer mexer na direcao"+keyD+"\n");
-				p.next=keyD;
 			}
 			moveTo(p, p.next);
 			notifyChange();
