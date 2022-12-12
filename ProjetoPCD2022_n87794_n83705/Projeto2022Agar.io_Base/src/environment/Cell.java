@@ -1,9 +1,11 @@
 package environment;
 
+import java.io.Serializable;
+
 import game.Game;
 import game.Player;
 
-public class Cell {
+public class Cell implements Serializable{
 	private Coordinate position;
 	private Game game;
 	private Player player=null;

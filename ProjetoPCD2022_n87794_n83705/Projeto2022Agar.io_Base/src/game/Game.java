@@ -13,7 +13,7 @@ public class Game extends Observable{
 	
 	public static final int DIMY = 30;
 	public static final int DIMX = 30;
-	private final int NUM_PLAYERS = 100;
+	public int NUM_PLAYERS = 100;
 	public final int NUM_HUMANS = 2;
 
 	public final long REFRESH_INTERVAL = 400;
@@ -22,9 +22,10 @@ public class Game extends Observable{
 	public final long MAX_WAITING_TIME_FOR_MOVE = 2000;
 	public final long INITIAL_WAITING_TIME = 10000;
 
-	protected Cell[][] board;
+	public Cell[][] board;
 	public AtomicInteger winCondition= new AtomicInteger();
 	public Direction keyD;
+	public boolean ended=false;
 	public ArrayList<Player> players= new ArrayList<Player>();
 	public ArrayList<Player> humans= new ArrayList<Player>();
 	public ArrayList<Thread> threads= new ArrayList<Thread>();
@@ -37,23 +38,26 @@ public class Game extends Observable{
 		
 	}
 
+	public Game(Cell[][] board){
+		this.board=board;
+	}
+
 	/** 
 	 * @param p - player
 	 * @throws UnknownHostException
 	 * @throws InterruptedException
 	 */
 
-	public void addHuman(int id) throws UnknownHostException {
+	public void addHuman(Player p) throws UnknownHostException {
 		//start dos humanos com lançamento do cliente q vai se ligar pelo server 
-		Player p= new HumanPlayer(id, this);
 		humans.add(p);
-		p.addHumanToGame();
+		((HumanPlayer) p).addHumanToGame();
 	}
 
 	public void addPhoneys() throws UnknownHostException {
 		Player p;
 		//start dos humanos com lançamento do cliente q vai se ligar pelo server 
-		for (int i = NUM_HUMANS; i!=NUM_HUMANS+NUM_PLAYERS; i++) { 
+		for (int i =0; i!=NUM_PLAYERS; i++) { 
 			p=new PhoneyHumanPlayer(i, this);
 			players.add(p);
 			threads.add(p.th);
@@ -68,8 +72,18 @@ public class Game extends Observable{
 		notifyChange();
 		System.out.println(p.getIdentification()+" lancado\n");
 	}
+	public void startPhoneys(){
+		try {
+			//Thread.sleep(3000);
+			this.addPhoneys();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
 	public void endGame() {
+		ended=true;
 		System.out.println("\n-»\n-»\nFIM DO JOGO\n«-\n«-\n");
 		for (int x = 0; x < DIMX; x++){
 			for (int y = 0; y < DIMY; y++){ 

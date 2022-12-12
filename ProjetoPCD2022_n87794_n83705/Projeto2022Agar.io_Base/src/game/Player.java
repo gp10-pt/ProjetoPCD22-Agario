@@ -10,18 +10,19 @@ import environment.Coordinate;
  * Represents a player.
  *
  */
-public abstract class Player implements Runnable, Serializable{
+public abstract class Player implements Runnable{
 
 
 	protected  Game game;
 
-	private int id;
+	public int id;
 
 	private byte currentStrength;
 	protected byte originalStrength;
 	public boolean isBlocked=false;
 	public boolean isDead=false;
 	private boolean isSleeping=true;
+	public boolean canRun=false;
 
 	private final Cell initialPos;
 	public Cell pos;
@@ -131,7 +132,7 @@ public abstract class Player implements Runnable, Serializable{
 		this.notify();
 	}
 	
-	public synchronized void addPlayerToGame(){
+	public synchronized void addPhoneyToGame(){
 		synchronized(initialPos) {
 		//System.out.println("posicao original do player "+this.getIdentification()+": "+initialPos.getPosition().toString());
 			while(initialPos.isOcupied()){
@@ -176,13 +177,13 @@ public abstract class Player implements Runnable, Serializable{
 	}	
 
 	//se o jogador chegar a energia maxima terminar o movimento e a thread
-	private void checkWin(){	
+	public void checkWin(){	
 		if (getCurrentStrength()>= (byte) win) {
 			this.currentStrength=(byte) win;
 			this.won=true;
 			System.out.println("Player "+this.getIdentification()+" chegou Ã  energia maxima E VENCEU !!\n----_----_----_----_----_----_----_----_----_\n");
 			//incrementar contador e verificar se o end goal (3) foi atingido
-			if(this.game.winCondition.incrementAndGet()==3)
+			if(this.game.winCondition.incrementAndGet()==5)
 				this.game.endGame();
 				th.stop();
 		}		
@@ -197,33 +198,6 @@ public abstract class Player implements Runnable, Serializable{
 
 	public void setAwake() {
 		this.isSleeping=false;
-	}
-	
-	public void run(){	
-		synchronized(this) {
-			try {			
-				//sleep after add , se for lancado depois por ter sido bloqueado vai esperar 10segs antes da proxima jogada e n pode ser atacado
-				addPlayerToGame();
-				th.sleep(10000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			System.out.print("---------- pronto a correr "+ id +"\n");
-			setAwake();
-			for(;;) {
-				try {
-					u= new Unblocker(game,this);
-					u.th.start();
-					game.move(this);
-					checkWin();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					//e.printStackTrace();
-					System.out.println("Player "+this.getIdentification()+" sleep interrupted e nova tentativa de move");
-				}
-			}
-		}
 	}
 
 	
