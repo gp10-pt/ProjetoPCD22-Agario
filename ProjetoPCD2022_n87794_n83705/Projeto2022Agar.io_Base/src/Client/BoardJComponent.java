@@ -1,7 +1,6 @@
 package Client;
 
 import environment.Coordinate;
-import environment.Direction;
 import game.Game;
 import game.Player;
 import java.awt.BasicStroke;

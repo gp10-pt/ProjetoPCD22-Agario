@@ -16,7 +16,7 @@ public class GameGuiMain implements Observer {
 
 	public GameGuiMain(Game g, boolean alternativeKeys){
 		super();
-		game=g;
+		this.game=g;
 		game.addObserver(this);
 		this.alternativeKeys=alternativeKeys;
 		buildGui();
@@ -45,6 +45,8 @@ public class GameGuiMain implements Observer {
 		return boardGui;
 	}
 
-	
+	public Game getGame(){
+		return this.game;
+	}
 
 }

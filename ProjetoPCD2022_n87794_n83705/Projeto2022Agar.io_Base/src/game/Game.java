@@ -1,5 +1,7 @@
 package game;
 import environment.Direction;
+
+import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Observable;
@@ -8,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import environment.Cell;
 import environment.Coordinate;
 
-public class Game extends Observable{
+public class Game extends Observable implements Serializable{
 
 	
 	public static final int DIMY = 30;
@@ -28,7 +30,7 @@ public class Game extends Observable{
 	public boolean ended=false;
 	public ArrayList<Player> players= new ArrayList<Player>();
 	public ArrayList<Player> humans= new ArrayList<Player>();
-	public ArrayList<Thread> threads= new ArrayList<Thread>();
+	public ArrayList<AddPlayers> threads= new ArrayList<AddPlayers>();
 
 	public Game() {
 		board = new Cell[Game.DIMX][Game.DIMY];
@@ -38,8 +40,13 @@ public class Game extends Observable{
 		
 	}
 
-	public Game(Cell[][] board){
-		this.board=board;
+	public void updateBoard(Cell[][] x){
+		this.board=x;
+		notifyChange();
+	}
+
+	public Cell[][] getBoard(){
+		return this.board;
 	}
 
 	/** 
@@ -51,7 +58,8 @@ public class Game extends Observable{
 	public void addHuman(Player p) throws UnknownHostException {
 		//start dos humanos com lançamento do cliente q vai se ligar pelo server 
 		humans.add(p);
-		((HumanPlayer) p).addHumanToGame();
+		((HumanPlayer) p).run();
+		//((HumanPlayer) p).addHumanToGame();
 	}
 
 	public void addPhoneys() throws UnknownHostException {
@@ -60,11 +68,9 @@ public class Game extends Observable{
 		for (int i =0; i!=NUM_PLAYERS; i++) { 
 			p=new PhoneyHumanPlayer(i, this);
 			players.add(p);
-			threads.add(p.th);
+			p.aP=new AddPlayers(p,this);
+			p.run();
 		}
-		for (Thread thread : threads) {
-			thread.start();
-        }
 	}
 
 	public void startPhoneys(){
@@ -113,7 +119,6 @@ public class Game extends Observable{
 	}
 
 	public void move(Player p) throws InterruptedException {
-
 		if(!p.won && p.playerIsAlive()){
 			// gerar a direcao pa mover se nao tiver ganho e tiver vivo
 			if(!p.isHumanPlayer()) {
@@ -122,7 +127,6 @@ public class Game extends Observable{
 				p.next=hipoteses[d];
 			}
 			moveTo(p, p.next);
-			notifyChange();
 		}
 	}
 
@@ -160,7 +164,7 @@ public class Game extends Observable{
 			if(future!= null && !getCell(future).isOcupied()) {
 				//System.out.println(p.getIdentification() + " - destino: "+future.toString()+ " - ronda "+ p.ronda);
 				p.setPosition(getCell(future));
-				p.u.th.stop();
+				p.u.stopU();
 				//notifyChange();
 			} else if(future==null) {
 				//System.out.println("PosiÃ§ao de destino out of bounds para o player: "+p.getIdentification()+"!\n"); 
@@ -170,18 +174,18 @@ public class Game extends Observable{
 				if (futuroP.playerIsAlive() && !futuroP.won && !futuroP.isSleeping()){
 					fight(p,futuroP);
 					futuroP.setPosition(getCell(future));
-					p.u.th.stop(); 
+					p.u.stopU();; 
 				}else {// apenas os phoneys ficam presos (espera q o Unblocker interrompa o sleep e continua o Player.run)
 					if(p instanceof PhoneyHumanPlayer) {
-						p.lock();
+						p.aP.lock();
 					}
 				}
 			}
 		} else{
 		//System.out.println("Player "+p.getIdentification()+" apenas mexe em "+(p.originalStrength-p.ronda%p.originalStrength)+" rondas");
-		} 
-		p.th.sleep(REFRESH_INTERVAL);	
+		} 	
 		p.ronda++;
+		notifyChange();
 	}
 
 	private void fight(Player a, Player b) {
@@ -199,7 +203,5 @@ public class Game extends Observable{
 			else
 				a.absorbs(b);
 	}
-	public void updateBoard(Cell[][] x){
-		this.board=x;
-	}
+
 }

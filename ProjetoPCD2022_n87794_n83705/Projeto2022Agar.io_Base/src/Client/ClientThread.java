@@ -16,8 +16,8 @@ public class ClientThread extends Thread{
     private Socket socket;
     private ObjectInputStream objIn;
 	private PrintWriter out;
-    private Game game;
     private boolean alternateKeys;
+	private GameGuiMain gui;
 
     public ClientThread(Socket socket, boolean alternateKeys){
         super();
@@ -27,8 +27,8 @@ public class ClientThread extends Thread{
 
     public void run(){
         try {
-            this.objIn = new ObjectInputStream(socket.getInputStream());
-            this.out= new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+			startGame();
+            openComs();
             communication();
         } catch (IOException | ClassNotFoundException e) {
             // TODO Auto-generated catch block
@@ -36,26 +36,30 @@ public class ClientThread extends Thread{
         }   
     }
 
+	
+	public void startGame(){
+		Game game=new Game();
+		gui= new GameGuiMain(game,alternateKeys);
+		gui.init();
+	}
+
+	public void openComs() throws IOException{
+		this.objIn = new ObjectInputStream(socket.getInputStream());
+		this.out= new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+		System.out.println("Client thread lançada");
+	}
+
 	//processo de rececao da info do servidor e envio de mensagem com informacao necessaria p move (direcao)
     public void communication() throws IOException, ClassNotFoundException{
-		game=new Game();
-		GameGuiMain gui= new GameGuiMain(game,alternateKeys);
-		gui.init();
-		KeyEvent e = new KeyEvent(gui.getBoardGui(), 1, 20, 1, 10, 'a');
+	//client recebe a game info do servidor e atualiza a gui	
 		while(true){
-	//client recebe a game info do servidor
 			Message msg= (Message) objIn.readObject();
 			if(msg.getEnd()==false){
-                System.out.println("\nClient waiting for game info");
-				game.updateBoard(msg.getBoard());
-				game.notifyChange();
-                gui.buildGui();
-				gui.getBoardGui().keyPressed(e);
-	//mensagem com informacao necessaria p move (direcao)
-				out.println(gui.getBoardGui().getLastPressedDirection());
-				System.out.println("Client sent move info!");
-	//clean da direcao
-				gui.getBoardGui().clearLastPressedDirection();
+				gui.getGame().updateBoard(msg.getBoard());
+				System.out.println("\nClient updated with game info");
+	//envio da direcao p server	
+				if(gui.getBoardGui().getLastPressedDirection()!=null)			
+					sendComs(gui);
 			}
 			else{
 				break;
@@ -63,7 +67,19 @@ public class ClientThread extends Thread{
 		}
 		objIn.close();
 		out.close();
-        //stop();
+		//stop();
 	}
+
+	
+
+	public void sendComs(GameGuiMain gui){
+//mensagem com informacao necessaria p move (direcao)
+		System.out.println(gui.getBoardGui().getLastPressedDirection());
+		out.println(gui.getBoardGui().getLastPressedDirection());
+		System.out.println("Client sent move info!");
+//clean da direcao
+		gui.getBoardGui().clearLastPressedDirection();
+	}
+
 
 }

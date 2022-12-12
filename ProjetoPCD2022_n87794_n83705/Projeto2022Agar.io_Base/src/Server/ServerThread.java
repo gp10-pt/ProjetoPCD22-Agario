@@ -14,7 +14,7 @@ import game.Player;
 
 public class ServerThread extends Thread {
 
-	Socket socket=null;
+	private Socket socket;
 	private Game game;
 	public ArrayList<Player> humans= new ArrayList<Player>();
 	private BufferedReader  in;
@@ -26,70 +26,69 @@ public class ServerThread extends Thread {
 		this.game=game;
 	}
 
-	public void run() {
-	//canais de comunicacao abertos	
-		try {
-			objOut = new ObjectOutputStream (socket.getOutputStream());
-			in = new BufferedReader (new InputStreamReader ( socket.getInputStream ()));
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		System.out.println("ServerThread "+this.getId()+" lançada");
-	//player é adicionado ao jogo apos conexao do cliente
+	public void openComs() throws IOException{
+		objOut = new ObjectOutputStream (socket.getOutputStream());
+		in = new BufferedReader (new InputStreamReader ( socket.getInputStream ()));
+	}
+
+	public void communication() throws InterruptedException, IOException{
+//player é adicionado ao jogo apos conexao do cliente
 		HumanPlayer human= new HumanPlayer(game.NUM_PLAYERS, game);
-		human.run();
+		//human.run();
 		game.NUM_PLAYERS++;
-	//mandar update do jogo p client, client recebe e responde com informacao p server dar update do move
+//mandar update do jogo p client, client recebe e responde com informacao p server dar update do move
 		while(!game.ended){
-			try{	
-	//envio info necessaria		
-				Cell[][] board= game.board;			
-				//ArrayList<GameInfo> info= fillMessage(game);
-				Message msg= new Message(board,false);
-				objOut.writeObject(msg);
-				System.out.println("Server sent game info!");
-	// leitura da mensagem do client e update para o humano mexer			
-				String s= in.readLine();
-				if (s != null) {
-					switch (s) {
-					case "LEFT":
-						human.next = environment.Direction.LEFT;
+//envio info necessaria		
+			Cell[][] board= game.getBoard();			
+			Message msg= new Message(board,false);
+			objOut.writeObject(msg);
+			System.out.println("Server sent game info!");
+// leitura da mensagem do client e update para o humano mexer			
+			String s= in.readLine();
+			if (s != null) {
+				switch (s) {
+					case "RIGHT":
+						human.next = environment.Direction.RIGHT;
 						human.canRun=true;
 						break;
-					case "UP":
-						human.next = environment.Direction.UP;
+					case "LEFT":
+						human.next = environment.Direction.LEFT;
 						human.canRun=true;
 						break;
 					case "DOWN":
 						human.next = environment.Direction.DOWN;
 						human.canRun=true;
 						break;
-					case "RIGHT":
-						human.next = environment.Direction.RIGHT;
+					case "UP":
+						human.next = environment.Direction.UP;
 						human.canRun=true;
 						break;
-					}
 				}
-	//sleep de 400ms para novo envio da informação
-				System.out.println("Server received game info!");
-				sleep(game.REFRESH_INTERVAL); 
-			} catch (InterruptedException | IOException e) {
-				e.printStackTrace();
 			}
+//sleep de 400ms para novo envio da informação
+			System.out.println("Server processed client info!");
+			sleep(game.REFRESH_INTERVAL);
 		}
-	//game is over
+//game acabou
+		endComs();
+	}
+
+	public void endComs() throws IOException{
+		Message fim=new Message(null, true);
+		objOut.writeObject(fim);
+		objOut.close();
+		in.close();
+		socket.close();
+	}
+
+	public void run() {
+//canais de comunicacao abertos	e a serverThread corre
 		try {
-			Message fim=new Message(null, true);
-			objOut.writeObject(fim);
-			objOut.close();
-			in.close();
-			socket.close();
-		} catch (IOException e) {
+			openComs();
+			communication();
+		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
-	
 }

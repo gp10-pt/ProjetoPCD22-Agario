@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import Client.GameGuiMain;
 import game.Game;
 
 public class Server {
@@ -49,6 +50,8 @@ public class Server {
 	public static void main(String[] args){
 		Game game= new Game();
 		game.startPhoneys();
+		GameGuiMain gui= new GameGuiMain(game,false);
+		gui.init();
 		//start do servidor que fica a esperar o add dos jogadores
 		Server servidor= new Server(8080,game);
 	}

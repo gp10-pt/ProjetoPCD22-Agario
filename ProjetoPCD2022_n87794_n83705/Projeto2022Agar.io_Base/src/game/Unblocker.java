@@ -15,6 +15,10 @@ public class Unblocker implements Runnable{
 		//System.out.println("Unblocker ligado");
 	}
 
+	public void stopU(){
+		th.stop();
+	}
+
 	// se player isBlocked vai esperar e dar unlock
 	@Override
 	public synchronized void run() {
@@ -24,7 +28,7 @@ public class Unblocker implements Runnable{
 			if(p.isBlocked() && p.playerIsAlive()){
 				p.isBlocked=false;
 				//System.out.println("Player "+p.getIdentification()+ " unblocked");
-				p.th.interrupt();
+				p.aP.interrupt();
 				th.stop();
 			}		
 		} catch (InterruptedException e) {
