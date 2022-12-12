@@ -16,6 +16,53 @@ public class AddPlayers extends Thread implements Serializable{
         this.game=game;
     }
 
+    public void run(){	
+        if(player instanceof PhoneyHumanPlayer){
+            synchronized(this) {
+                try {			
+                    //sleep after add , se for lancado depois por ter sido bloqueado vai esperar 10segs antes da proxima jogada e n pode ser atacado
+                    addPhoneyToGame();
+                    this.sleep(10000);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                System.out.print("---------- pronto a correr "+ player.id +"\n");
+                player.setAwake();
+                while(player.playerIsAlive()) {
+                    try {
+                        this.u= new Unblocker(game,player);
+                        u.th.start();
+                        move(player);
+                        checkWin();
+                        sleep(game.REFRESH_INTERVAL);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        //e.printStackTrace();
+                        System.out.println("Player "+player.getIdentification()+" sleep interrupted e nova tentativa de move");
+                    }
+                }
+            }
+            //se humano, dar awake e quando o server 
+        } else if(player instanceof HumanPlayer) {
+            addHumanToGame();
+            System.out.print("---------- pronto a correr "+ player.id +"\n");
+            player.setAwake();
+            while(!game.ended){
+                if(player.canRun){
+                    try {
+                        moveTo(player, player.next);
+                        checkWin();
+                    } catch (InterruptedException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+                    player.canRun=false;
+                }
+            }
+        }
+        }
+
     public void addHumanToGame(){
 		player.initialPos.setPlayer(player);
 		player.setPosition(player.initialPos);
@@ -114,7 +161,7 @@ public class AddPlayers extends Thread implements Serializable{
 			if(future!= null && !game.getCell(future).isOcupied()) {
 				//System.out.println(p.getIdentification() + " - destino: "+future.toString()+ " - ronda "+ p.ronda);
 				p.setPosition(game.getCell(future));
-				p.aP.u.stopU();
+				u.stopU();
 				//notifyChange();
 			} else if(future==null) {
 				//System.out.println("PosiÃ§ao de destino out of bounds para o player: "+p.getIdentification()+"!\n"); 
@@ -124,10 +171,10 @@ public class AddPlayers extends Thread implements Serializable{
 				if (futuroP.playerIsAlive() && !futuroP.won && !futuroP.isSleeping()){
 					fight(p,futuroP);
 					futuroP.setPosition(game.getCell(future));
-					p.aP.u.stopU(); 
+					u.stopU(); 
 				}else {// apenas os phoneys ficam presos (espera q o Unblocker interrompa o sleep e continua o Player.run)
 					if(p instanceof PhoneyHumanPlayer) {
-						p.aP.lock();
+						lock();
 					}
 				}
 			}
@@ -152,51 +199,6 @@ public class AddPlayers extends Thread implements Serializable{
 				b.absorbs(a);
 			else
 				a.absorbs(b);
-	}
-
-    public void run(){	
-    if(player instanceof PhoneyHumanPlayer){
-		synchronized(this) {
-			try {			
-				//sleep after add , se for lancado depois por ter sido bloqueado vai esperar 10segs antes da proxima jogada e n pode ser atacado
-				addPhoneyToGame();
-				this.sleep(10000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			System.out.print("---------- pronto a correr "+ player.id +"\n");
-			player.setAwake();
-			while(player.playerIsAlive()) {
-				try {
-					this.u= new Unblocker(game,player);
-					u.run();
-					move(player);
-					checkWin();
-                    sleep(game.REFRESH_INTERVAL);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					//e.printStackTrace();
-					System.out.println("Player "+player.getIdentification()+" sleep interrupted e nova tentativa de move");
-				}
-			}
-		}
-    } else {
-		System.out.print("---------- pronto a correr "+ player.id +"\n");
-		player.setAwake();
-		while(!game.ended){
-			if(player.canRun){
-				try {
-					moveTo(player, player.next);
-					checkWin();
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				player.canRun=false;
-			}
-		}
-    }
 	}
 
     

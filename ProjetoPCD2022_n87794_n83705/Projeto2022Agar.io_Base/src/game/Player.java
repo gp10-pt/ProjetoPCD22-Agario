@@ -130,14 +130,12 @@ public abstract class Player implements Serializable{
 	public void absorbs(Player s) {
 		this.currentStrength+=s.getCurrentStrength();
 		s.death();
-		//System.out.println("\nO jogador "+ s.getIdentification() + " morreu contra o jogador "+this.getIdentification()+".\n#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|");
-		//System.out.println("O player "+this.getIdentification()+" chegou a "+this.getCurrentStrength()+" de energia na ronda "+this.ronda+" contra o jogador "+s.getIdentification()+".\n#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|");
 	}
 	
 	public void death() {
 		this.currentStrength=0;
 		this.isDead=true;
-		System.out.println("O jogador "+ this.getIdentification() + " morreu na ronda "+this.ronda+".\n#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|\n");
+		//System.out.println("O jogador "+ this.getIdentification() + " morreu na ronda "+this.ronda+".\n#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|\n");
 	}	
 
 	public void setAwake() {

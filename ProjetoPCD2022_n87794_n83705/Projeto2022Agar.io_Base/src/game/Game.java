@@ -56,13 +56,22 @@ public class Game extends Observable implements Serializable{
 
 	public HumanPlayer addHuman() throws UnknownHostException {
 		//start dos humanos com lançamento do cliente q vai se ligar pelo server 
-		HumanPlayer p=new HumanPlayer(NUM_PLAYERS, this);
+		Player p=new HumanPlayer(NUM_PLAYERS, this);
 		humans.add(p);
 		p.aP=new AddPlayers(p,this);
 		p.aP.start();
 		NUM_PLAYERS++;
-		return p;
+		return (HumanPlayer) p;
 		//((HumanPlayer) p).addHumanToGame();
+	}
+
+	public void startPhoneys(){
+		try {
+			addPhoneys();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void addPhoneys() throws UnknownHostException {
@@ -76,15 +85,6 @@ public class Game extends Observable implements Serializable{
 		}
 	}
 
-	public void startPhoneys(){
-		try {
-			//Thread.sleep(3000);
-			addPhoneys();
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 
 	public void playerAdded(Player p) {
 		// To update GUI 

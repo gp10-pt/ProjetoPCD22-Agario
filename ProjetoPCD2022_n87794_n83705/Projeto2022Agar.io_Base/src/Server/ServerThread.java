@@ -5,12 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
-
 import environment.Cell;
 import game.Game;
 import game.HumanPlayer;
-import game.Player;
 
 public class ServerThread extends Thread {
 
@@ -33,6 +30,7 @@ public class ServerThread extends Thread {
 	public void communication() throws InterruptedException, IOException{
 //player é adicionado ao jogo apos conexao do cliente
 		HumanPlayer human= game.addHuman();
+		System.out.println("Cliente adicionado!");
 //mandar update do jogo p client, client recebe e responde com informacao p server dar update do move
 		while(!game.ended){
 //envio info necessaria		

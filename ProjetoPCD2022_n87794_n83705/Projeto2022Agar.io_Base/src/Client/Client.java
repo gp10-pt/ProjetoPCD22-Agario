@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.io.BufferedWriter;
 import Server.Message;
 import game.Game;
+import java.awt.event.KeyEvent;
 
 
 public class Client {
@@ -73,10 +74,12 @@ public class Client {
 	//processo de rececao da info do servidor e envio de mensagem com informacao necessaria p move (direcao)
     public void communication() throws IOException, ClassNotFoundException{
 	//client recebe a game info do servidor e atualiza a gui	
+	KeyEvent e = new KeyEvent(gui.getBoardGui(), 1, 20, 1, 10, 'a');
 		while(true){
 			Message msg= (Message) objIn.readObject();
 			if(msg.getEnd()==false){
 				gui.getGame().updateBoard(msg.getBoard());
+				gui.getBoardGui().keyPressed(e);
 				System.out.println("\nClient updated with game info");
 	//envio da direcao p server	
 				if(gui.getBoardGui().getLastPressedDirection()!=null)			
