@@ -1,6 +1,8 @@
 package game;
 
-public class Unblocker implements Runnable{
+import java.io.Serializable;
+
+public class Unblocker implements Runnable, Serializable{
 	protected  Game game;
 	public Thread th;
 	private Player p;

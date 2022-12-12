@@ -32,7 +32,7 @@ public abstract class Player implements Runnable, Serializable{
 	public final byte win = (byte) 10;
 
 	//public Thread th;
-	public Unblocker u;
+	//public Unblocker u;
 	public AddPlayers aP;
 
 	// TODO: get player position from data in game

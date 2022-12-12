@@ -3,16 +3,18 @@ package game;
 import java.io.Serializable;
 import java.net.UnknownHostException;
 
+import environment.Coordinate;
+import environment.Direction;
+
 public class AddPlayers extends Thread implements Serializable{
 
     private Game game;
     private Player player;
-    private Unblocker u;
+    Unblocker u;
 
     public AddPlayers(Player p, Game game){
         this.player=p;
         this.game=game;
-        this.u=player.u;
     }
 
     public void addHumanToGame(){
@@ -66,13 +68,100 @@ public class AddPlayers extends Thread implements Serializable{
 		}		
 	}
 
+    
+	public void move(Player p) throws InterruptedException {
+		if(!p.won && p.playerIsAlive()){
+			// gerar a direcao pa mover se nao tiver ganho e tiver vivo
+			if(!p.isHumanPlayer()) {
+				Direction[] hipoteses = { Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT };
+				int d = (int) (Math.random() * hipoteses.length);
+				p.next=hipoteses[d];
+			}
+			moveTo(p, p.next);
+		}
+	}
+
+    public void moveTo(Player p, Direction direction) throws InterruptedException { 
+		if (p.ronda%p.originalStrength==0) {
+			Coordinate future = null; 
+			Coordinate pre= p.getPosition();
+			int x=pre.x;
+			int y=pre.y;
+			//			System.out.println(entity.getIdentification() + " - origem: "+pre.toString());
+			if(direction!=null)
+				switch (direction) {
+				case UP: {
+					if(y-1 >= 0)
+						future = pre.translate(Direction.UP.getVector());
+					break;
+				}
+				case DOWN: {
+					if(y+1 < game.DIMY)
+						future = pre.translate(Direction.DOWN.getVector());
+					break;
+				}
+				case LEFT: {
+					if(x-1 >= 0)
+						future = pre.translate(Direction.LEFT.getVector());
+					break;
+				}
+				case RIGHT: {
+					if(x+1 < game.DIMX)
+						future = pre.translate(Direction.RIGHT.getVector());
+					break;
+				}
+				}
+				// movimenta se pois a celula esta vazia e nao esta bloqueado, terminando o Unblocker pois nao foi necessario
+			if(future!= null && !game.getCell(future).isOcupied()) {
+				//System.out.println(p.getIdentification() + " - destino: "+future.toString()+ " - ronda "+ p.ronda);
+				p.setPosition(game.getCell(future));
+				p.aP.u.stopU();
+				//notifyChange();
+			} else if(future==null) {
+				//System.out.println("PosiÃ§ao de destino out of bounds para o player: "+p.getIdentification()+"!\n"); 
+			} else if(game.getCell(future).isOcupied()){
+				// fight se o jogador esta vivo, ainda nao venceu e nao esta sleeping
+				Player futuroP=game.getCell(future).getPlayer();
+				if (futuroP.playerIsAlive() && !futuroP.won && !futuroP.isSleeping()){
+					fight(p,futuroP);
+					futuroP.setPosition(game.getCell(future));
+					p.aP.u.stopU(); 
+				}else {// apenas os phoneys ficam presos (espera q o Unblocker interrompa o sleep e continua o Player.run)
+					if(p instanceof PhoneyHumanPlayer) {
+						p.aP.lock();
+					}
+				}
+			}
+		} else{
+		//System.out.println("Player "+p.getIdentification()+" apenas mexe em "+(p.originalStrength-p.ronda%p.originalStrength)+" rondas");
+		} 	
+		p.ronda++;
+		game.notifyChange();
+	}
+
+    private void fight(Player a, Player b) {
+		System.out.println("\n"+a.getIdentification()+" entrou em confronto contra "+b.getIdentification()+ " - ronda "+ a.ronda);
+		if (a.getCurrentStrength()==b.getCurrentStrength()) {
+			int i= (int) Math.random()*2;
+			if(i==0) {
+				a.absorbs(b);
+			}else {
+				b.absorbs(a);
+			}				
+		} else 
+			if (a.getCurrentStrength()<b.getCurrentStrength())
+				b.absorbs(a);
+			else
+				a.absorbs(b);
+	}
+
     public void run(){	
     if(player instanceof PhoneyHumanPlayer){
 		synchronized(player) {
 			try {			
 				//sleep after add , se for lancado depois por ter sido bloqueado vai esperar 10segs antes da proxima jogada e n pode ser atacado
 				addPhoneyToGame();
-				this.sleep(2000);
+				this.sleep(10000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -81,9 +170,9 @@ public class AddPlayers extends Thread implements Serializable{
 			player.setAwake();
 			while(player.playerIsAlive()) {
 				try {
-					player.u= new Unblocker(game,player);
-					player.u.run();
-					game.move(player);
+					this.u= new Unblocker(game,player);
+					u.run();
+					move(player);
 					checkWin();
                     sleep(game.REFRESH_INTERVAL);
 				} catch (InterruptedException e) {
@@ -105,7 +194,7 @@ public class AddPlayers extends Thread implements Serializable{
 		while(!game.ended){
 			if(player.canRun){
 				try {
-					game.moveTo(player, player.next);
+					moveTo(player, player.next);
 					checkWin();
 				} catch (InterruptedException e1) {
 					// TODO Auto-generated catch block

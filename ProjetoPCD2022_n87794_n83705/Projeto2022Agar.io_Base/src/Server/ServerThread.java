@@ -64,9 +64,12 @@ public class ServerThread extends Thread {
 						human.canRun=true;
 						break;
 				}
+				System.out.println("Server processed client info!");
 			}
-//sleep de 400ms para novo envio da informação
-			System.out.println("Server processed client info!");
+			else{
+				System.out.println("No Direction chosen by client!");
+			}
+//sleep de 400ms para novo envio da informação			
 			sleep(game.REFRESH_INTERVAL);
 		}
 //game acabou

@@ -58,7 +58,8 @@ public class Game extends Observable implements Serializable{
 	public void addHuman(Player p) throws UnknownHostException {
 		//start dos humanos com lançamento do cliente q vai se ligar pelo server 
 		humans.add(p);
-		((HumanPlayer) p).run();
+		p.aP=new AddPlayers(p,this);
+		p.aP.start();
 		//((HumanPlayer) p).addHumanToGame();
 	}
 
@@ -69,7 +70,7 @@ public class Game extends Observable implements Serializable{
 			p=new PhoneyHumanPlayer(i, this);
 			players.add(p);
 			p.aP=new AddPlayers(p,this);
-			p.run();
+			p.aP.start();
 		}
 	}
 
@@ -117,91 +118,6 @@ public class Game extends Observable implements Serializable{
 		Cell newCell=getCell(new Coordinate((int)(Math.random()*Game.DIMX),(int)(Math.random()*Game.DIMY)));
 		return newCell; 
 	}
-
-	public void move(Player p) throws InterruptedException {
-		if(!p.won && p.playerIsAlive()){
-			// gerar a direcao pa mover se nao tiver ganho e tiver vivo
-			if(!p.isHumanPlayer()) {
-				Direction[] hipoteses = { Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT };
-				int d = (int) (Math.random() * hipoteses.length);
-				p.next=hipoteses[d];
-			}
-			moveTo(p, p.next);
-		}
-	}
-
-	public void moveTo(Player p, Direction direction) throws InterruptedException { 
-		if (p.ronda%p.originalStrength==0) {
-			Coordinate future = null; 
-			Coordinate pre= p.getPosition();
-			int x=pre.x;
-			int y=pre.y;
-			//			System.out.println(entity.getIdentification() + " - origem: "+pre.toString());
-			if(direction!=null)
-				switch (direction) {
-				case UP: {
-					if(y-1 >= 0)
-						future = pre.translate(Direction.UP.getVector());
-					break;
-				}
-				case DOWN: {
-					if(y+1 < DIMY)
-						future = pre.translate(Direction.DOWN.getVector());
-					break;
-				}
-				case LEFT: {
-					if(x-1 >= 0)
-						future = pre.translate(Direction.LEFT.getVector());
-					break;
-				}
-				case RIGHT: {
-					if(x+1 < DIMX)
-						future = pre.translate(Direction.RIGHT.getVector());
-					break;
-				}
-				}
-				// movimenta se pois a celula esta vazia e nao esta bloqueado, terminando o Unblocker pois nao foi necessario
-			if(future!= null && !getCell(future).isOcupied()) {
-				//System.out.println(p.getIdentification() + " - destino: "+future.toString()+ " - ronda "+ p.ronda);
-				p.setPosition(getCell(future));
-				p.u.stopU();
-				//notifyChange();
-			} else if(future==null) {
-				//System.out.println("PosiÃ§ao de destino out of bounds para o player: "+p.getIdentification()+"!\n"); 
-			} else if(getCell(future).isOcupied()){
-				// fight se o jogador esta vivo, ainda nao venceu e nao esta sleeping
-				Player futuroP=getCell(future).getPlayer();
-				if (futuroP.playerIsAlive() && !futuroP.won && !futuroP.isSleeping()){
-					fight(p,futuroP);
-					futuroP.setPosition(getCell(future));
-					p.u.stopU();; 
-				}else {// apenas os phoneys ficam presos (espera q o Unblocker interrompa o sleep e continua o Player.run)
-					if(p instanceof PhoneyHumanPlayer) {
-						p.aP.lock();
-					}
-				}
-			}
-		} else{
-		//System.out.println("Player "+p.getIdentification()+" apenas mexe em "+(p.originalStrength-p.ronda%p.originalStrength)+" rondas");
-		} 	
-		p.ronda++;
-		notifyChange();
-	}
-
-	private void fight(Player a, Player b) {
-		System.out.println("\n"+a.getIdentification()+" entrou em confronto contra "+b.getIdentification()+ " - ronda "+ a.ronda);
-		if (a.getCurrentStrength()==b.getCurrentStrength()) {
-			int i= (int) Math.random()*2;
-			if(i==0) {
-				a.absorbs(b);
-			}else {
-				b.absorbs(a);
-			}				
-		} else 
-			if (a.getCurrentStrength()<b.getCurrentStrength())
-				b.absorbs(a);
-			else
-				a.absorbs(b);
-	}
+	
 
 }
