@@ -16,7 +16,6 @@ public class Game extends Observable implements Serializable{
 	public static final int DIMY = 30;
 	public static final int DIMX = 30;
 	public int NUM_PLAYERS = 100;
-	public final int NUM_HUMANS = 2;
 
 	public final long REFRESH_INTERVAL = 400;
 	public final double MAX_INITIAL_STRENGTH = 3;
@@ -55,11 +54,14 @@ public class Game extends Observable implements Serializable{
 	 * @throws InterruptedException
 	 */
 
-	public void addHuman(Player p) throws UnknownHostException {
+	public HumanPlayer addHuman() throws UnknownHostException {
 		//start dos humanos com lançamento do cliente q vai se ligar pelo server 
+		HumanPlayer p=new HumanPlayer(NUM_PLAYERS, this);
 		humans.add(p);
 		p.aP=new AddPlayers(p,this);
 		p.aP.start();
+		NUM_PLAYERS++;
+		return p;
 		//((HumanPlayer) p).addHumanToGame();
 	}
 

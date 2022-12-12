@@ -1,7 +1,6 @@
 package game;
 
 import java.io.Serializable;
-import java.net.UnknownHostException;
 
 import environment.Coordinate;
 import environment.Direction;
@@ -157,7 +156,7 @@ public class AddPlayers extends Thread implements Serializable{
 
     public void run(){	
     if(player instanceof PhoneyHumanPlayer){
-		synchronized(player) {
+		synchronized(this) {
 			try {			
 				//sleep after add , se for lancado depois por ter sido bloqueado vai esperar 10segs antes da proxima jogada e n pode ser atacado
 				addPhoneyToGame();
@@ -183,12 +182,6 @@ public class AddPlayers extends Thread implements Serializable{
 			}
 		}
     } else {
-        try {
-			game.addHuman(player);
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		System.out.print("---------- pronto a correr "+ player.id +"\n");
 		player.setAwake();
 		while(!game.ended){

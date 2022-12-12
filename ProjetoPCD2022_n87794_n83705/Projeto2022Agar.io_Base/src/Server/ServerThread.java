@@ -16,7 +16,6 @@ public class ServerThread extends Thread {
 
 	private Socket socket;
 	private Game game;
-	public ArrayList<Player> humans= new ArrayList<Player>();
 	private BufferedReader  in;
 	private ObjectOutputStream objOut;
 
@@ -33,9 +32,7 @@ public class ServerThread extends Thread {
 
 	public void communication() throws InterruptedException, IOException{
 //player é adicionado ao jogo apos conexao do cliente
-		HumanPlayer human= new HumanPlayer(game.NUM_PLAYERS, game);
-		//human.run();
-		game.NUM_PLAYERS++;
+		HumanPlayer human= game.addHuman();
 //mandar update do jogo p client, client recebe e responde com informacao p server dar update do move
 		while(!game.ended){
 //envio info necessaria		

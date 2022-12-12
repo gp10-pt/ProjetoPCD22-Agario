@@ -18,8 +18,4 @@ public class PhoneyHumanPlayer extends Player implements Serializable {
 	public boolean isHumanPlayer() {
 		return false;
 	}
-
-	public void run(){
-		this.aP.start();
-	}
 }

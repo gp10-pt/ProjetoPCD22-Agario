@@ -28,10 +28,6 @@ public class HumanPlayer extends Player implements Serializable {
 		}		
 	}
 
-	@Override
-	public void run(){	
-		this.aP.start();
-	}
 }
 
 

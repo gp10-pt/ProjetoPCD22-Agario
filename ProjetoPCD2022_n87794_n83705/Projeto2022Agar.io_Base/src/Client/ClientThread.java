@@ -9,7 +9,6 @@ import java.io.IOException;
 import Server.Message;
 import game.Game;
 
-import java.awt.event.KeyEvent;
 
 public class ClientThread extends Thread{
 
