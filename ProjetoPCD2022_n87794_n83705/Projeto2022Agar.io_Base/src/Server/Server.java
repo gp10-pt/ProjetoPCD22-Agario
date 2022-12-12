@@ -1,16 +1,11 @@
 package Server;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import Client.GameGuiMain;
 import game.Game;
-
-import static java.lang.Integer.parseInt;
 
 public class Server {
 	private ServerSocket sSocket;

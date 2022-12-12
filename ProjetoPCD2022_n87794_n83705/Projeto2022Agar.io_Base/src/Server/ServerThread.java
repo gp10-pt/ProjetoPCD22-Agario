@@ -26,29 +26,11 @@ public class ServerThread extends Thread {
 		this.game=game;
 	}
 
-	/*public ArrayList<GameInfo> fillMessage (Game game){
-        ArrayList<GameInfo> msg = new ArrayList<>();
-        for (int x = 0; x < Game.DIMX; x++) {
-			for (int y = 0; y < Game.DIMY; y++) {
-				if (game.board[x][y].isOcupied()) {
-					int posX = x;
-					int posY = y;
-                    boolean isHuman = game.board[x][y].getPlayer().isHumanPlayer();
-					int strength = game.board[x][y].getPlayer().getCurrentStrength();
-					GameInfo data = new GameInfo(posX, posY, isHuman, strength);
-					msg.add(data);
-				}
-			}
-		}
-        return msg;
-    }*/
-
-
 	public void run() {
 	//canais de comunicacao abertos	
 		try {
-			this.objOut = new ObjectOutputStream (socket.getOutputStream());
-			this.in = new BufferedReader (new InputStreamReader ( socket.getInputStream ()));
+			objOut = new ObjectOutputStream (socket.getOutputStream());
+			in = new BufferedReader (new InputStreamReader ( socket.getInputStream ()));
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

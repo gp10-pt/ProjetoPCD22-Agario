@@ -5,7 +5,6 @@ import java.util.Observer;
 
 import javax.swing.JFrame;
 
-import environment.Cell;
 import game.Game;
 
 
@@ -23,7 +22,7 @@ public class GameGuiMain implements Observer {
 		buildGui();
 	}
 
-	private void buildGui() {
+	public void buildGui() {
 		boardGui = new BoardJComponent(game,alternativeKeys);
 		frame.add(boardGui);
 
@@ -46,9 +45,6 @@ public class GameGuiMain implements Observer {
 		return boardGui;
 	}
 
-	public void updateBoard(Cell[][] board){
-		game.board=board;
-	}
 	
 
 }

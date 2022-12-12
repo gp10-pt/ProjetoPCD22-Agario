@@ -1,6 +1,8 @@
 package environment;
 
-public class Coordinate {
+import java.io.Serializable;
+
+public class Coordinate implements Serializable{
 	public final int x;
 	public final int y;
 

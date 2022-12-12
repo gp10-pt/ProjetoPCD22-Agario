@@ -67,19 +67,20 @@ public class Game extends Observable{
         }
 	}
 
-	public void playerAdded(Player p) {
-		// To update GUI 
-		notifyChange();
-		System.out.println(p.getIdentification()+" lancado\n");
-	}
 	public void startPhoneys(){
 		try {
 			//Thread.sleep(3000);
-			this.addPhoneys();
+			addPhoneys();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public void playerAdded(Player p) {
+		// To update GUI 
+		notifyChange();
+		System.out.println(p.getIdentification()+" lancado\n");
 	}
 	
 	public void endGame() {
@@ -197,5 +198,8 @@ public class Game extends Observable{
 				b.absorbs(a);
 			else
 				a.absorbs(b);
+	}
+	public void updateBoard(Cell[][] x){
+		this.board=x;
 	}
 }

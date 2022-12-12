@@ -33,15 +33,14 @@ public class Client {
 
 
 	public void connectToGame(InetAddress address, int port) throws IOException, ClassNotFoundException,InterruptedException{
-		//System.out.println("Cliente iniciado");
 		this.socket = new Socket(address, port);
 		System.out.println("Client conectado a socket: "+socket.getPort());
 		ClientThread ct= new ClientThread(socket,alternateKeys);
 		ct.start();
-
-		while(ct.isAlive()){
-			Thread.sleep(2000);
-		}
+		ct.join();
+		//while(ct.isAlive()){
+		//	Thread.sleep(2000);
+		//}
 	}
 	
 

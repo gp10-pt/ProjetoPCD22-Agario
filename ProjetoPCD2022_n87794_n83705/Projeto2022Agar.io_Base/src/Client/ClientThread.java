@@ -45,10 +45,11 @@ public class ClientThread extends Thread{
 		while(true){
 	//client recebe a game info do servidor
 			Message msg= (Message) objIn.readObject();
-			if(!msg.getEnd()){
+			if(msg.getEnd()==false){
                 System.out.println("\nClient waiting for game info");
-				gui.updateBoard(msg.getBoard());
+				game.updateBoard(msg.getBoard());
 				game.notifyChange();
+                gui.buildGui();
 				gui.getBoardGui().keyPressed(e);
 	//mensagem com informacao necessaria p move (direcao)
 				out.println(gui.getBoardGui().getLastPressedDirection());
@@ -62,7 +63,7 @@ public class ClientThread extends Thread{
 		}
 		objIn.close();
 		out.close();
-        stop();
+        //stop();
 	}
 
 }

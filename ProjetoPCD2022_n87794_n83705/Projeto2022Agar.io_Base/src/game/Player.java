@@ -10,7 +10,7 @@ import environment.Coordinate;
  * Represents a player.
  *
  */
-public abstract class Player implements Runnable{
+public abstract class Player implements Runnable, Serializable{
 
 
 	protected  Game game;
