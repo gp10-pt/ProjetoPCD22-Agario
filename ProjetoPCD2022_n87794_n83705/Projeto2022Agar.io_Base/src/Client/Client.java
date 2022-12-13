@@ -37,8 +37,8 @@ public class Client {
 			// necessaria p move (direcao)
 			communication();
 		} catch (IOException | ClassNotFoundException | InterruptedException e) {
-			System.out.println("Falha no lancamento );\n");
 			e.printStackTrace();
+			//System.out.println("\n Jogo fechado pelo cliente ");
 		} finally {
 			try {
 				socket.close();

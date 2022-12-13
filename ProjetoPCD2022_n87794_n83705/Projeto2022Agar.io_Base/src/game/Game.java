@@ -16,7 +16,7 @@ public class Game extends Observable implements Serializable {
 	public static final int DIMY = 30;
 	public static final int DIMX = 30;
 	public int NUM_PLAYERS = 100;
-
+	public final int NUM_WINNERS=5;
 	public final long REFRESH_INTERVAL = 400;
 	public final double MAX_INITIAL_STRENGTH = 3;
 	public final double MAX_INITIAL_STRENGTH_HUMANS = 5;
@@ -24,7 +24,8 @@ public class Game extends Observable implements Serializable {
 	public final long INITIAL_WAITING_TIME = 10000;
 
 	public Cell[][] board;
-	private Cell[][] duplicate;
+	public CDLEnd endCount;
+	public EndThread end;
 	public AtomicInteger winCondition = new AtomicInteger();
 	public Direction keyD;
 	public boolean ended = false;
@@ -37,7 +38,8 @@ public class Game extends Observable implements Serializable {
 		for (int x = 0; x < Game.DIMX; x++)
 			for (int y = 0; y < Game.DIMY; y++)
 				board[x][y] = new Cell(new Coordinate(x, y), this);
-
+		this.endCount= null;
+		this.end = new EndThread(this);
 	}
 
 	public void updateBoard(Cell[][] x) {
@@ -46,7 +48,7 @@ public class Game extends Observable implements Serializable {
 	}
 
 	public Cell[][] getBoard() {
-		duplicate = new Cell[Game.DIMX][Game.DIMY];
+		Cell[][] duplicate = new Cell[Game.DIMX][Game.DIMY];
 		for (int x = 0; x < Game.DIMX; x++) {
 			for (int y = 0; y < Game.DIMY; y++) {
 				duplicate[x][y] = new Cell(new Coordinate(x, y), this);
@@ -60,6 +62,14 @@ public class Game extends Observable implements Serializable {
 			}
 		}
 		return duplicate;
+	}
+
+	public CDLEnd getCDL(){
+		return endCount;
+	}
+
+	public void setCDL(CDLEnd cdl){
+		this.endCount=cdl;
 	}
 
 	/**

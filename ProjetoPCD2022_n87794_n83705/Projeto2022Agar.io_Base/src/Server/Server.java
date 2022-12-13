@@ -30,7 +30,7 @@ public class Server {
 		// espera pelo pedido de ligacao dos clientes e lanÃ§a a thread autonoma p
 		// tratar do jogador
 		try {
-			while (!game.ended) {
+			while (true) {
 				// System.out.println("Calling accept");
 				Socket socket = sSocket.accept();
 				new ServerThread(socket, game).start();

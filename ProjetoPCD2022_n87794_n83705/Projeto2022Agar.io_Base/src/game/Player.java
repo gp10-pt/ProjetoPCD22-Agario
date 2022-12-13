@@ -131,6 +131,11 @@ public abstract class Player implements Serializable {
 
 	public void absorbs(Player s) {
 		this.currentStrength += s.getCurrentStrength();
+		if (getCurrentStrength() >= (byte) win) {
+			currentStrength = (byte) win;
+			won = true;
+			game.getCDL().countDownLatch(id);
+		}
 		s.death();
 	}
 
@@ -153,8 +158,6 @@ public abstract class Player implements Serializable {
 	}
 
 	public void fight(Player b) {
-		// System.out.println("\n"+this.getIdentification()+" entrou em confronto contra
-		// "+b.getIdentification()+ " - ronda "+ this.ronda);
 		if (this.getCurrentStrength() == b.getCurrentStrength()) {
 			int i = (int) Math.random() * 2;
 			if (i == 0) {

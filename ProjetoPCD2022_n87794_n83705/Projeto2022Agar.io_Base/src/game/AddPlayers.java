@@ -54,7 +54,7 @@ public class AddPlayers extends Thread implements Serializable {
 				if (!player.initialPos.getPlayer().playerIsAlive()) { // se dead nao colocar o jogador
 					System.out.println(
 							"Jogador " + player.getIdentification() + " eliminado pois jogador morto esta na posicao");
-					return;
+					this.stop();
 				}
 				// se nao, esperar que a posicao fique livre e depois adicionar ao jogo
 				System.out.println("Posicao ja ocupada para player " + player.getIdentification() + " pelo Player "
@@ -86,11 +86,7 @@ public class AddPlayers extends Thread implements Serializable {
 		if (player.getCurrentStrength() >= (byte) player.win) {
 			player.currentStrength = (byte) player.win;
 			player.won = true;
-			System.out.println("Player " + player.getIdentification()
-					+ " chegou a energia maxima E VENCEU !!\n----_----_----_----_----_----_----_----_----_\n");
-			// incrementar contador e verificar se o end goal (3) foi atingido
-			if (this.game.winCondition.incrementAndGet() == 5)
-				this.game.endGame();
+			//System.out.println("Player " + player.getIdentification()+ " );
 			this.stop();
 		}
 	}

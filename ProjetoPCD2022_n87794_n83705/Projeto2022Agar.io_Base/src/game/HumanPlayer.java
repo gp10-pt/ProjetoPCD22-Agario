@@ -24,11 +24,7 @@ public class HumanPlayer extends Player implements Serializable {
 		if (getCurrentStrength() >= (byte) win) {
 			currentStrength = (byte) win;
 			won = true;
-			System.out.println("Player " + getIdentification()
-					+ " chegou ÃƒÂ  energia maxima E VENCEU !!\n----_----_----_----_----_----_----_----_----_\n");
-			// incrementar contador e verificar se o end goal (3) foi atingido
-			if (game.winCondition.incrementAndGet() == 5)
-				game.endGame();
+			
 		}
 	}
 
