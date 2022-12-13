@@ -1,49 +1,67 @@
 package game;
 
+import java.io.Serializable;
 
 import environment.Cell;
 import environment.Direction;
 import environment.Coordinate;
+
 /**
  * Represents a player.
  *
  */
-public abstract class Player implements Runnable {
+public abstract class Player implements Serializable {
 
+	protected Game game;
 
-	protected  Game game;
+	public int id;
 
-	private int id;
-
-	private byte currentStrength;
+	byte currentStrength;
 	protected byte originalStrength;
-	private boolean isDead=false;
-	private boolean isSleeping=true;
+	public boolean isBlocked = false;
+	public boolean isDead = false;
+	private boolean isSleeping = true;
+	public boolean canRun = false;
 
+	public final Cell initialPos;
 	public Cell pos;
 	public Direction next;
 	public int ronda;
 	public boolean won;
 	public final byte win = (byte) 10;
 
-	public Thread th;
+	public AddPlayers aP;
 
 	// TODO: get player position from data in game
 	public Cell getCurrentCell() {
 		return pos;
 	}
 
+	// teste
+	public Player(byte strength) {
+		initialPos = null;
+		this.currentStrength = strength;
+	}
+
 	public Player(int id, Game game) {
 		super();
+
+		byte strength;
 		this.id = id;
-		this.game=game;
-		byte strength= (byte) (1 + Math.random() * 3);
-		currentStrength=strength;
-		originalStrength=strength;
-		this.pos=pos;
-		Thread p=new Thread(this);
-		this.th=p;
-		System.out.println("Sou o player " +id+" e tenho "+strength+" de força");
+		this.game = game;
+		if (!this.isHumanPlayer()) {
+			strength = (byte) (1 + Math.random() * 3);
+		}
+		// strength para humanos
+		else {
+			strength = (byte) 5;
+		}
+		currentStrength = strength;
+		originalStrength = strength;
+		this.initialPos = game.getRandomCell();
+
+		// System.out.println("Sou o player " +id+" e tenho "+originalStrength+" de
+		// forÃƒÂ§a");
 	}
 
 	public abstract boolean isHumanPlayer();
@@ -51,7 +69,7 @@ public abstract class Player implements Runnable {
 	@Override
 	public String toString() {
 		return "Player [id=" + id + ", currentStrength=" + currentStrength + ", getCurrentCell()=" + getCurrentCell()
-		+ "]";
+				+ "]";
 	}
 
 	@Override
@@ -83,102 +101,71 @@ public abstract class Player implements Runnable {
 	public byte getOriginalStrength() {
 		return originalStrength;
 	}
-	
+
 	public int getIdentification() {
 		return id;
 	}
-	
+
 	public Coordinate getPosition() {
 		return pos.getPosition();
 	}
-	
-	public boolean isAlive() {
+
+	public boolean playerIsAlive() {
 		return !this.isDead;
 	}
-	
+
 	public void setPosition(Cell c) {
-		 if(pos!=null)
-			 this.game.getCell(pos.getPosition()).removePlayer();
-		 c.setPlayer(this);
-		 pos=c;
+		if (pos != null)
+			this.game.getCell(pos.getPosition()).removePlayer();
+		c.setPlayer(this);
+		pos = c;
 	}
-	
-	public boolean isSleeping(){
+
+	public boolean isSleeping() {
 		return this.isSleeping;
 	}
 
-	public void addPlayerToGame(){
-		Cell initialPos=this.game.getRandomCell();
-		//System.out.println("posicão original do player "+this.getIdentification()+": "+initialPos.getPosition().toString());
-		while(initialPos.isOcupied()){
-			if(!initialPos.getPlayer().isAlive()){	//se dead nao colocar o jogador
-				th.stop();
-				System.out.println("Jogador "+this.getIdentification()+" eliminado pois jogador morto esta na posicao");
-			}		
-			// se nao, esperar  a posicao fique livre e depois adicionar ao jogo ( COM WAIT )			
-			try {
-//				System.out.println("Posicao ja ocupada para player " + this.getIdentification()+" pelo Player "+initialPos.getPlayer().getIdentification());
-				th.sleep(game.REFRESH_INTERVAL);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}	
-		}
-		initialPos.setPlayer(this);
-		this.setPosition(initialPos);
-		// To update GUI 
-		game.playerAdded(this);
+	public synchronized boolean isBlocked() {
+		return this.isBlocked == true;
 	}
 
 	public void absorbs(Player s) {
-		this.currentStrength+=s.getCurrentStrength();
+		this.currentStrength += s.getCurrentStrength();
 		s.death();
-		//System.out.println("\nO jogador "+ s.getIdentification() + " morreu contra o jogador "+this.getIdentification()+".\n#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|");
-		//System.out.println("O player "+this.getIdentification()+" chegou a "+this.getCurrentStrength()+" de energia na ronda "+this.ronda+" contra o jogador "+s.getIdentification()+".\n#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|");
 	}
-	
+
 	public void death() {
-		this.currentStrength=0;
-		this.isDead=true;
-		System.out.println("O jogador "+ this.getIdentification() + " morreu na ronda "+this.ronda+".\n#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|\n");
-		this.th.stop();
-	}	
-
-	//se o jogador chegar a energia maxima terminar o movimento e a thread
-	private void checkWin(){	
-		if (getCurrentStrength()>= (byte) win) {
-			this.currentStrength=(byte) win;
-			this.won=true;
-			System.out.println("Player "+this.getIdentification()+" chegou à energia maxima E VENCEU !!\n----_----_----_----_----_----_----_----_----_\n");
-			//ganhou
-			this.game.finished++;
-			if(this.game.finished==3)
-				this.game.endGame();
-			th.stop();
-		}		
+		this.currentStrength = 0;
+		this.isDead = true;
+		// System.out.println("O jogador "+ this.getIdentification() + " morreu na ronda
+		// "+this.ronda+".\n#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|\n");
 	}
-	
-	public void run(){		
-		try {			
-			//sleep after add , se for lancado depois por ter sido bloqueado vai esperar 10segs antes da proxima jogada nao sei se é suposto
-			addPlayerToGame();		
-			th.sleep(4000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.out.print("pronto a correr "+ id +"\n");
-		this.isSleeping=false;	
-		for(;;){
-			try {
-				game.move(this);
-				checkWin();
-				th.sleep(this.game.REFRESH_INTERVAL);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}		
-}
 
+	public void setAwake() {
+		this.isSleeping = false;
+	}
+
+	public void addHumanToGame() {
+		initialPos.setPlayer(this);
+		setPosition(initialPos);
+		// To update GUI
+		game.playerAdded(this);
+	}
+
+	public void fight(Player b) {
+		// System.out.println("\n"+this.getIdentification()+" entrou em confronto contra
+		// "+b.getIdentification()+ " - ronda "+ this.ronda);
+		if (this.getCurrentStrength() == b.getCurrentStrength()) {
+			int i = (int) Math.random() * 2;
+			if (i == 0) {
+				this.absorbs(b);
+			} else {
+				b.absorbs(this);
+			}
+		} else if (this.getCurrentStrength() < b.getCurrentStrength())
+			b.absorbs(this);
+		else
+			this.absorbs(b);
+	}
+
+}
