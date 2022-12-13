@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 /**
  * Class to demonstrate a player being added to the game.
+ * 
  * @author luismota
  *
  */

@@ -2,7 +2,7 @@ package environment;
 
 import java.io.Serializable;
 
-public class Coordinate implements Serializable{
+public class Coordinate implements Serializable {
 	public final int x;
 	public final int y;
 
@@ -19,9 +19,9 @@ public class Coordinate implements Serializable{
 	@Override
 	public boolean equals(Object obj) {
 		Coordinate other = (Coordinate) obj;
-		return other.x==x && other.y == y;
+		return other.x == x && other.y == y;
 	}
-	
+
 	public double distanceTo(Coordinate other) {
 		double dx = y - other.y;
 		double dy = x - other.x;
@@ -29,6 +29,6 @@ public class Coordinate implements Serializable{
 	}
 
 	public Coordinate translate(Coordinate vector) {
-		return new Coordinate(x+vector.x, y+vector.y);
+		return new Coordinate(x + vector.x, y + vector.y);
 	}
 }

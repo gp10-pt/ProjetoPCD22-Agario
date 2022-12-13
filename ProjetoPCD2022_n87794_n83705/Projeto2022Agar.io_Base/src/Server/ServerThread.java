@@ -13,66 +13,70 @@ public class ServerThread extends Thread {
 
 	private Socket socket;
 	private Game game;
-	private BufferedReader  in;
+	private BufferedReader in;
 	private ObjectOutputStream objOut;
 
-	public ServerThread(Socket socket, Game game){
+	public ServerThread(Socket socket, Game game) {
 		super();
-		this.socket=socket;
-		this.game=game;
+		this.socket = socket;
+		this.game = game;
 	}
 
-	public void openComs() throws IOException{
-		objOut = new ObjectOutputStream (socket.getOutputStream());
-		in = new BufferedReader (new InputStreamReader ( socket.getInputStream ()));
+	public void openComs() throws IOException {
+		objOut = new ObjectOutputStream(socket.getOutputStream());
+		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	}
 
-	public void communication() throws InterruptedException, IOException{
-//player é adicionado ao jogo apos conexao do cliente
-		HumanPlayer human= game.addHuman();
-		System.out.println("Cliente adicionado!");
+	public void communication() throws InterruptedException, IOException {
+//player Ã© adicionado ao jogo apos conexao do cliente
+		HumanPlayer human = game.addHuman();
+		System.out.println("Cliente adicionado!\n");
 //mandar update do jogo p client, client recebe e responde com informacao p server dar update do move
-		while(!game.ended){
+		while (!game.ended) {
 //envio info necessaria		
-			Cell[][] board= game.getBoard();			
-			Message msg= new Message(board,false);
-			objOut.writeObject(msg);
-			System.out.println("Server sent game info!");
-// leitura da mensagem do client e update para o humano mexer			
-			String s= in.readLine();
-			if (s != null) {
+			Cell[][] board = game.getBoard();
+			if(human.playerIsAlive() && !human.won){
+				Message msg = new Message(board, false,true);
+				objOut.writeObject(msg);
+// leitura da mensagem do client e update para o humano mexer se este ainda nao tiver ganho			
+			String s = in.readLine();
+			if (s != null && !human.won) {
 				switch (s) {
-					case "RIGHT":
-						human.next = environment.Direction.RIGHT;
-						human.canRun=true;
-						break;
-					case "LEFT":
-						human.next = environment.Direction.LEFT;
-						human.canRun=true;
-						break;
-					case "DOWN":
-						human.next = environment.Direction.DOWN;
-						human.canRun=true;
-						break;
-					case "UP":
-						human.next = environment.Direction.UP;
-						human.canRun=true;
-						break;
+				case "RIGHT":
+					human.next = environment.Direction.RIGHT;
+					human.move(human.next);
+					// human.canRun=true;
+					break;
+				case "LEFT":
+					human.next = environment.Direction.LEFT;
+					human.move(human.next);
+					// human.canRun=true;
+					break;
+				case "DOWN":
+					human.next = environment.Direction.DOWN;
+					human.move(human.next);
+					// human.canRun=true;
+					break;
+				case "UP":
+					human.next = environment.Direction.UP;
+					human.move(human.next);
+					// human.canRun=true;
+					break;
 				}
-				System.out.println("Server processed client info!");
 			}
-			else{
-				System.out.println("No Direction chosen by client!");
-			}
-//sleep de 400ms para novo envio da informação			
+		} else {
+			Message msg = new Message(board, false,false);
+			objOut.writeObject(msg);
+		}
+//sleep de 400ms para novo envio da informaÃ§Ã£o			
 			sleep(game.REFRESH_INTERVAL);
 		}
 //game acabou
 		endComs();
 	}
 
-	public void endComs() throws IOException{
-		Message fim=new Message(null, true);
+	public void endComs() throws IOException {
+		Message fim = new Message(game.getBoard(), true,false);
 		objOut.writeObject(fim);
 		objOut.close();
 		in.close();

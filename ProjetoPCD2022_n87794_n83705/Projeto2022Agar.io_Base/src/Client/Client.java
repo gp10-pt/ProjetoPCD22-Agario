@@ -10,34 +10,32 @@ import java.io.PrintWriter;
 import java.io.BufferedWriter;
 import Server.Message;
 import game.Game;
-import java.awt.event.KeyEvent;
-
 
 public class Client {
 
 	private Socket socket;
 	private boolean alternateKeys;
-    private ObjectInputStream objIn;
+	private ObjectInputStream objIn;
 	private PrintWriter out;
 	private GameGuiMain gui;
+	private BoardJComponent listener;
 
-	//cria client e conecta ao jogo
-	public Client (InetAddress address, int port, boolean alternateKeys) {
-		this.alternateKeys=alternateKeys;
-		if(alternateKeys) 
+	// cria client e conecta ao jogo
+	public Client(InetAddress address, int port, boolean alternateKeys) {
+		this.alternateKeys = alternateKeys;
+		if (alternateKeys)
 			System.out.println("as teclas selecionadas sao: wasd");
-		else 
+		else
 			System.out.println("as teclas selecionadas sao: as setas");
 
 		try {
-			//conexao cliente servidor
-			connectToGame(address,port);
-			//gui start		
+			// conexao cliente servidor
+			connectToGame(address, port);
+			// gui start
 			startGame();
-			//abrir canais de comunicacao
-            openComs();
-			//processo de rececao da info do servidor e envio de mensagem com informacao necessaria p move (direcao)
-            communication();
+			// processo de rececao da info do servidor e envio de mensagem com informacao
+			// necessaria p move (direcao)
+			communication();
 		} catch (IOException | ClassNotFoundException | InterruptedException e) {
 			System.out.println("Falha no lancamento );\n");
 			e.printStackTrace();
@@ -50,42 +48,45 @@ public class Client {
 		}
 	}
 
-
-	public void connectToGame(InetAddress address, int port) throws IOException, ClassNotFoundException,InterruptedException{
+	public void connectToGame(InetAddress address, int port)
+			throws IOException, ClassNotFoundException, InterruptedException {
 		this.socket = new Socket(address, port);
-		System.out.println("Client conectado a socket: "+socket.getPort());
-		/*ClientThread ct= new ClientThread(socket,alternateKeys);
-		ct.start();
-		ct.join();*/
+		System.out.println("Client conectado a socket: " + socket.getPort());
 	}
 
-	public void startGame(){
-		Game game=new Game();
-		gui= new GameGuiMain(game,alternateKeys);
+	public void startGame() {
+		Game game = new Game();
+		gui = new GameGuiMain(game, alternateKeys);
 		gui.init();
+		listener = gui.getBoardGui();
 	}
 
-	public void openComs() throws IOException{
+	public void openComs() throws IOException {
 		this.objIn = new ObjectInputStream(socket.getInputStream());
-		this.out= new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-		System.out.println("Client thread lançada");
+		this.out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+		System.out.println("Client thread lancada");
 	}
 
-	//processo de rececao da info do servidor e envio de mensagem com informacao necessaria p move (direcao)
-    public void communication() throws IOException, ClassNotFoundException{
-	//client recebe a game info do servidor e atualiza a gui	
-	KeyEvent e = new KeyEvent(gui.getBoardGui(), 1, 20, 1, 10, 'a');
-		while(true){
-			Message msg= (Message) objIn.readObject();
-			if(msg.getEnd()==false){
-				gui.getGame().updateBoard(msg.getBoard());
-				gui.getBoardGui().keyPressed(e);
-				System.out.println("\nClient updated with game info");
-	//envio da direcao p server	
-				if(gui.getBoardGui().getLastPressedDirection()!=null)			
-					sendComs(gui);
-			}
-			else{
+	// processo de rececao da info do servidor e envio de mensagem com informacao
+	// necessaria p move (direcao)
+	public void communication() throws IOException, ClassNotFoundException {
+		// abrir canais de comunicacao
+		openComs();
+		// client recebe a game info do servidor e atualiza a gui
+		while (true) {
+			Message msg = (Message) objIn.readObject();
+			gui.getGame().updateBoard(msg.getBoard());
+			if (!msg.getEnd()) {
+				if(msg.getAlive()){
+					if(listener.getLastPressedDirection()!=null){
+						System.out.println(listener.getLastPressedDirection());
+					}
+					// envio da direcao p server
+					out.println(listener.getLastPressedDirection());
+					// clean da direcao
+					listener.clearLastPressedDirection();
+				}			
+			} else {
 				break;
 			}
 		}
@@ -93,31 +94,23 @@ public class Client {
 		out.close();
 	}
 
-	
-
-	public void sendComs(GameGuiMain gui){
-//mensagem com informacao necessaria p move (direcao)
-		System.out.println(gui.getBoardGui().getLastPressedDirection());
-		out.println(gui.getBoardGui().getLastPressedDirection());
-		System.out.println("Client sent move info!");
-//clean da direcao
-		gui.getBoardGui().clearLastPressedDirection();
-	}
-	
-
-	//inicia NUM_HUMANS clientes para controlar os NUM_HUMANS humanos
-	public static void main(String[] args){
+	// inicia 1 cliente para controlar 1 humano ( args = localhost 8080 0/1 ) - 0 para setas e 1 para wasd
+	public static void main(String[] args) {
 		try {
-			Client c = new Client(InetAddress.getByName(null),8080,false);
+			InetAddress ip=InetAddress.getByName(args[0]);
+			int port=Integer.parseInt(args[1]);
+			int keys=Integer.parseInt(args[2]);
+			if(keys==0) {
+				Client c = new Client(ip, port, false);
+			}
+			else {
+				Client c = new Client(ip, port, true);
+			}
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
-	}
 
-	
-	
+	}
 
 }

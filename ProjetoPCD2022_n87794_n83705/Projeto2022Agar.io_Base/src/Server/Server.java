@@ -12,10 +12,10 @@ public class Server {
 	private ServerSocket sSocket;
 	private final int PORT;
 	public Game game;
-	
-	public Server (int port, Game g) {
-		this.PORT=port;
-		this.game=g;
+
+	public Server(int port, Game g) {
+		this.PORT = port;
+		this.game = g;
 		try {
 			runServer();
 		} catch (IOException | ClassNotFoundException e) {
@@ -25,35 +25,36 @@ public class Server {
 	}
 
 	public void runServer() throws IOException, ClassNotFoundException {
-		sSocket= new ServerSocket(PORT);
-		System.out.println("\n-»\n-»\nServidor a correr no porto "+PORT+"\n«-\n«-\n");
-		//espera pelo pedido de ligacao dos clientes e lança a thread autonoma p tratar do jogador
-		try{
-			while(!game.ended){
-				System.out.println("Calling accept");
-				Socket socket= sSocket.accept();
-				new ServerThread(socket,game).start();
+		sSocket = new ServerSocket(PORT);
+		System.out.println("\n-Â»\nServidor a correr no porto " + PORT + "\nÂ«-\n");
+		// espera pelo pedido de ligacao dos clientes e lanÃ§a a thread autonoma p
+		// tratar do jogador
+		try {
+			while (!game.ended) {
+				// System.out.println("Calling accept");
+				Socket socket = sSocket.accept();
+				new ServerThread(socket, game).start();
 			}
 		} finally {
 			sSocket.close();
-		}	
+		}
 	}
 
-	public InetAddress getAddress(){
+	public InetAddress getAddress() {
 		return sSocket.getInetAddress();
 	}
 
-	public int getPort(){
+	public int getPort() {
 		return PORT;
 	}
 
-	public static void main(String[] args){
-		Game game= new Game();
+	public static void main(String[] args) {
+		Game game = new Game();
 		game.startPhoneys();
-		GameGuiMain gui= new GameGuiMain(game,false);
+		GameGuiMain gui = new GameGuiMain(game, false);
 		gui.init();
-		//start do servidor que fica a esperar o add dos jogadores
-		Server servidor= new Server(8080,game);
+		// start do servidor que fica a esperar o add dos jogadores
+		Server servidor = new Server(8080, game);
 	}
 
 }
