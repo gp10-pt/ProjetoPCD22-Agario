@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import environment.Cell;
 
+@SuppressWarnings("serial")
 public class Message implements Serializable {
 	private boolean ended;
     private boolean alive;

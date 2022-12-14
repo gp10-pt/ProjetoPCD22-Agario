@@ -28,12 +28,11 @@ public class Cell implements Serializable {
 		return player;
 	}
 
-	// Should not be used like this in the initial state: cell might be occupied,
-	// must coordinate this operation
 	public void setPlayer(Player player) {
 		this.player = player;
 	}
 
+	//ao remover desta celula acontece notify aos players em espera p colocar nesta celula
 	public synchronized void removePlayer() {
 		synchronized(this){
 			this.player= null;

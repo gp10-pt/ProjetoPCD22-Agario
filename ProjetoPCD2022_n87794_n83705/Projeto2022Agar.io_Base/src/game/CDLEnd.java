@@ -1,9 +1,8 @@
 package game;
 
 import java.io.Serializable;
-import java.util.concurrent.CountDownLatch;
 
-
+@SuppressWarnings("serial")
 public class CDLEnd implements Serializable{
 
 	boolean finished=false;
@@ -21,6 +20,7 @@ public class CDLEnd implements Serializable{
     	return goal;
     }
 
+    //se um jogador vencer goal é decrementado e quando chegar a 0 notifica a Thread a espera deste objeto
 	public synchronized void decrement(int id) {
 		synchronized(this) {
 			System.out.println("O jogador " + id + " chegou a energia maxima E VENCEU !!\n--------------------------------------------\n");	

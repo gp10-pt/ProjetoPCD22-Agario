@@ -1,7 +1,6 @@
 package game;
 
 import java.io.Serializable;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("serial")
 public class EndThread extends Thread implements Serializable{
@@ -14,6 +13,7 @@ public class EndThread extends Thread implements Serializable{
         game.setCDL(countdownlatch);
 	}
 
+    //espera pela notificacao do CDLEnd de modo a terminar o jogo
     public void run() {
         synchronized(countdownlatch){ 
             while(!countdownlatch.finished){

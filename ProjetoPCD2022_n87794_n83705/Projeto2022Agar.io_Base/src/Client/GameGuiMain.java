@@ -7,6 +7,7 @@ import javax.swing.JFrame;
 
 import game.Game;
 
+@SuppressWarnings("deprecation")
 public class GameGuiMain implements Observer {
 	private JFrame frame = new JFrame("pcd.io");
 	private BoardJComponent boardGui;

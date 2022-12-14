@@ -10,6 +10,7 @@ import environment.Coordinate;
  * Represents a player.
  *
  */
+@SuppressWarnings("serial")
 public abstract class Player implements Serializable {
 
 	protected Game game;
@@ -37,12 +38,6 @@ public abstract class Player implements Serializable {
 		return pos;
 	}
 
-	// teste
-	public Player(byte strength) {
-		initialPos = null;
-		this.currentStrength = strength;
-	}
-
 	public Player(int id, Game game) {
 		super();
 
@@ -59,12 +54,23 @@ public abstract class Player implements Serializable {
 		currentStrength = strength;
 		originalStrength = strength;
 		this.initialPos = game.getRandomCell();
-
-		// System.out.println("Sou o player " +id+" e tenho "+originalStrength+" de
-		// forÃƒÂ§a");
 	}
 
+	// player para visualizacao nos clients
+	public Player(byte strength) {
+		initialPos = null;
+		this.currentStrength = strength;
+	}
+		
 	public abstract boolean isHumanPlayer();
+	
+
+	public void addHumanToGame() {
+		initialPos.setPlayer(this);
+		setPosition(initialPos);
+		// To update GUI
+		game.playerAdded(this);
+	}
 
 	@Override
 	public String toString() {
@@ -129,6 +135,7 @@ public abstract class Player implements Serializable {
 		return this.isBlocked == true;
 	}
 
+	//acao fight desencadeia o recebimento da energia do adversario e a sua morte
 	public void absorbs(Player s) {
 		this.currentStrength += s.getCurrentStrength();
 		if (getCurrentStrength() >= (byte) win) {
@@ -139,24 +146,18 @@ public abstract class Player implements Serializable {
 		s.death();
 	}
 
+	//morte do jogador
 	public void death() {
 		this.currentStrength = 0;
 		this.isDead = true;
-		// System.out.println("O jogador "+ this.getIdentification() + " morreu na ronda
-		// "+this.ronda+".\n#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|#|\n");
 	}
 
+	//desbloqueamento do sleep inicial
 	public void setAwake() {
 		this.isSleeping = false;
 	}
-
-	public void addHumanToGame() {
-		initialPos.setPlayer(this);
-		setPosition(initialPos);
-		// To update GUI
-		game.playerAdded(this);
-	}
-
+	
+	//fight com o jogador da celula destino
 	public void fight(Player b) {
 		if (this.getCurrentStrength() == b.getCurrentStrength()) {
 			int i = (int) Math.random() * 2;

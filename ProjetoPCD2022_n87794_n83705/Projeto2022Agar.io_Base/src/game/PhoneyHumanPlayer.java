@@ -8,6 +8,7 @@ import java.io.Serializable;
  * @author luismota
  *
  */
+@SuppressWarnings("serial")
 public class PhoneyHumanPlayer extends Player implements Serializable {
 
 	int id;

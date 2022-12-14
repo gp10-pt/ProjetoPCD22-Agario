@@ -25,6 +25,7 @@ import javax.swing.JComponent;
  * @author luismota
  *
  */
+@SuppressWarnings("serial")
 public class BoardJComponent extends JComponent implements KeyListener {
 
 	private Game game;
@@ -41,8 +42,7 @@ public class BoardJComponent extends JComponent implements KeyListener {
 		addKeyListener(this);
 	}
 
-	// vai ser preenchido de acordo com a informacao recebida pelo cliente dos
-	// server
+	// vai ser preenchido de acordo com a board do game
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
@@ -101,6 +101,7 @@ public class BoardJComponent extends JComponent implements KeyListener {
 			}
 	}
 
+	//direction p movement depente das keys selecionadas
 	@Override
 	public void keyPressed(KeyEvent e) {
 		if (alternativeKeys) {

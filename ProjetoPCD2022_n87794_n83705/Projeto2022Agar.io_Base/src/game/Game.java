@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import environment.Cell;
 import environment.Coordinate;
 
+@SuppressWarnings({ "serial", "deprecation" })
 public class Game extends Observable implements Serializable {
 
 	public static final int DIMY = 30;
@@ -38,16 +39,17 @@ public class Game extends Observable implements Serializable {
 		for (int x = 0; x < Game.DIMX; x++)
 			for (int y = 0; y < Game.DIMY; y++)
 				board[x][y] = new Cell(new Coordinate(x, y), this);
-		//this.endCount= new CDLEnd(this);
 		this.end = new EndThread(this);
 		end.start();
 	}
 
+	//update board para visualizacao pelo cliente
 	public void updateBoard(Cell[][] x) {
 		this.board = x;
 		notifyChange();
 	}
 
+	//board para envio aos clietes
 	public Cell[][] getBoard() {
 		Cell[][] duplicate = new Cell[Game.DIMX][Game.DIMY];
 		for (int x = 0; x < Game.DIMX; x++) {
@@ -79,8 +81,8 @@ public class Game extends Observable implements Serializable {
 	 * @throws InterruptedException
 	 */
 
+	// start dos humanos que acontece com o lancamento do cliente q vai se ligar pelo server
 	public HumanPlayer addHuman() throws UnknownHostException {
-		// start dos humanos com lanÃ§amento do cliente q vai se ligar pelo server
 		Player p = new HumanPlayer(NUM_PLAYERS, this);
 		humans.add(p);
 		p.addHumanToGame();
@@ -97,9 +99,9 @@ public class Game extends Observable implements Serializable {
 		}
 	}
 
+	//add de NUM_PLAYERS jogadores automaticos ao jogo
 	public void addPhoneys() throws UnknownHostException {
 		Player p;
-		// start dos humanos com lanÃ§amento do cliente q vai se ligar pelo server
 		for (int i = 0; i != NUM_PLAYERS; i++) {
 			p = new PhoneyHumanPlayer(i, this);
 			players.add(p);
@@ -111,10 +113,10 @@ public class Game extends Observable implements Serializable {
 	public void playerAdded(Player p) {
 		// To update GUI
 		notifyChange();
-		// System.out.println(p.getIdentification()+" lancado\n");
 	}
 
-	public void endGame() {// ciclo a correr vetor de players em vez de board
+	//acabar com o jogo ao correr a board e matar todos os players vivos que n�o venceram
+	public void endGame() {
 		ended = true;
 		System.out.println("\n-Â»\nFIM DO JOGO\nÂ«-\n");
 		for (int x = 0; x < DIMX; x++) {
@@ -130,6 +132,11 @@ public class Game extends Observable implements Serializable {
 	public Cell getCell(Coordinate at) {
 		return board[at.x][at.y];
 	}
+	
+	public Cell getRandomCell() {
+		Cell newCell = getCell(new Coordinate((int) (Math.random() * Game.DIMX), (int) (Math.random() * Game.DIMY)));
+		return newCell;
+	}
 
 	/**
 	 * Updates GUI. Should be called anytime the game state changes
@@ -139,9 +146,5 @@ public class Game extends Observable implements Serializable {
 		notifyObservers();
 	}
 
-	public Cell getRandomCell() {
-		Cell newCell = getCell(new Coordinate((int) (Math.random() * Game.DIMX), (int) (Math.random() * Game.DIMY)));
-		return newCell;
-	}
-
+	
 }

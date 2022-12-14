@@ -6,11 +6,11 @@ import java.net.UnknownHostException;
 import environment.Coordinate;
 import environment.Direction;
 
+@SuppressWarnings("serial")
 public class HumanPlayer extends Player implements Serializable {
 
 	public HumanPlayer(int id, Game game) {
 		super(id, game);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -24,18 +24,17 @@ public class HumanPlayer extends Player implements Serializable {
 		if (getCurrentStrength() >= (byte) win) {
 			currentStrength = (byte) win;
 			won = true;
-			
 		}
 	}
 
+	//move especifico de player humano
+	@SuppressWarnings("static-access")
 	public void move(Direction next) {
 		// TODO Auto-generated method stub
 		Coordinate future = null;
 		Coordinate pre = this.getPosition();
 		int x = pre.x;
 		int y = pre.y;
-		// System.out.println(entity.getIdentification() + " - origem:
-		// "+pre.toString());
 		if (next != null)
 			switch (next) {
 			case UP: {
@@ -62,13 +61,8 @@ public class HumanPlayer extends Player implements Serializable {
 		// movimenta se pois a celula esta vazia e nao esta bloqueado, terminando o
 		// Unblocker pois nao foi necessario
 		if (future != null && !game.getCell(future).isOcupied()) {
-			// System.out.println(p.getIdentification() + " - destino: "+future.toString()+
-			// " - ronda "+ p.ronda);
 			this.setPosition(game.getCell(future));
-		} else if (future == null) {
-			// System.out.println("Posicao de destino out of bounds para o Client:
-			// "+p.getIdentification()+"!\n");
-		} else if (game.getCell(future).isOcupied()) {
+		} else if (future != null && game.getCell(future).isOcupied()) {
 			// fight se o jogador esta vivo, ainda nao venceu e nao esta sleeping
 			Player futuroP = game.getCell(future).getPlayer();
 			if (futuroP.playerIsAlive() && !futuroP.won && !futuroP.isSleeping()) {
@@ -76,6 +70,7 @@ public class HumanPlayer extends Player implements Serializable {
 				futuroP.setPosition(game.getCell(future));
 			}
 		}
+		//check se tem energia maxima
 		checkWin();
 		game.notifyChange();
 	}

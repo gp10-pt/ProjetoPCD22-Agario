@@ -5,6 +5,7 @@ import java.io.Serializable;
 import environment.Coordinate;
 import environment.Direction;
 
+@SuppressWarnings("serial")
 public class AddPlayers extends Thread implements Serializable {
 
 	private Game game;
@@ -16,19 +17,19 @@ public class AddPlayers extends Thread implements Serializable {
 		this.game = game;
 	}
 
+	@SuppressWarnings("static-access")
 	public void run() {
 		if (player instanceof PhoneyHumanPlayer) {
 			synchronized (this) {
 				try {
-					// sleep after add , se for lancado depois por ter sido bloqueado vai esperar
-					// 10segs antes da proxima jogada e n pode ser atacado
+					// add do jogador e sleep inicial
 					addPhoneyToGame();
 					this.sleep(10000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				//System.out.print("---------- pronto a correr "+ player.id +"\n");
+				//player acorda e come�a as suas acoes
 				player.setAwake();
 				while (player.playerIsAlive()) {
 					try {
@@ -46,10 +47,10 @@ public class AddPlayers extends Thread implements Serializable {
 		}
 	}
 
+	//add phoney player com wait pela celula inicial se ja ocupada 
+	@SuppressWarnings("deprecation")
 	public synchronized void addPhoneyToGame() {
 		synchronized (player.initialPos) {
-			// System.out.println("posicao original do player "+this.getIdentification()+":
-			// "+initialPos.getPosition().toString());
 			while (player.initialPos.isOcupied()) {
 				if (!player.initialPos.getPlayer().playerIsAlive()) { // se dead nao colocar o jogador
 					System.out.println(
@@ -74,23 +75,25 @@ public class AddPlayers extends Thread implements Serializable {
 		game.playerAdded(player);
 	}
 
+	//lock do phoney pois se movimentou contra player morto
+	@SuppressWarnings("static-access")
 	public synchronized void lock() throws InterruptedException {
 		player.isBlocked = true;
 		if (player.isBlocked())
 			this.sleep(2000);
-		// System.out.println("Player "+this.getIdentification()+" lockado ");
 	}
 
 	// se o jogador chegar a energia maxima terminar o movimento e a thread
+	@SuppressWarnings("deprecation")
 	public void checkWin() {
 		if (player.getCurrentStrength() >= (byte) player.win) {
 			player.currentStrength = (byte) player.win;
 			player.won = true;
-			//System.out.println("Player " + player.getIdentification()+ " );
 			this.stop();
 		}
 	}
 
+	//move especifico de player automatico
 	public synchronized void move(Player p) throws InterruptedException {
 		if (!p.won && p.playerIsAlive()) {
 			// gerar a direcao pa mover se nao tiver ganho e tiver vivo
@@ -103,14 +106,14 @@ public class AddPlayers extends Thread implements Serializable {
 		}
 	}
 
+	@SuppressWarnings("static-access")
 	public synchronized void moveTo(Player p, Direction direction) throws InterruptedException {
 		if (p.ronda % p.originalStrength == 0) {
 			Coordinate future = null;
 			Coordinate pre = p.getPosition();
 			int x = pre.x;
 			int y = pre.y;
-			// System.out.println(entity.getIdentification() + " - origem:
-			// "+pre.toString());
+			//proxima direcao com check OutOfBounds
 			if (direction != null)
 				switch (direction) {
 				case UP: {
@@ -134,34 +137,24 @@ public class AddPlayers extends Thread implements Serializable {
 					break;
 				}
 				}
-			// movimenta se pois a celula esta vazia e nao esta bloqueado, terminando o
-			// Unblocker pois nao foi necessario
+			// movimenta se pois a celula esta vazia e nao esta bloqueado, terminando o Unblocker pois nao foi necessario
 			if (future != null && !game.getCell(future).isOcupied()) {
-				// System.out.println(p.getIdentification() + " - destino: "+future.toString()+
-				// " - ronda "+ p.ronda);
 				p.setPosition(game.getCell(future));
 				u.stopU();
-				// notifyChange();
-			} else if (future == null) {
-				// System.out.println("PosiÃƒÂ§ao de destino out of bounds para o player:
-				// "+p.getIdentification()+"!\n");
-			} else if (game.getCell(future).isOcupied()) {
+			} else if (future != null && game.getCell(future).isOcupied()) {
 				// fight se o jogador esta vivo, ainda nao venceu e nao esta sleeping
 				Player futuroP = game.getCell(future).getPlayer();
 				if (futuroP.playerIsAlive() && !futuroP.won && !futuroP.isSleeping()) {
 					player.fight(futuroP);
 					futuroP.setPosition(game.getCell(future));
 					u.stopU();
-				} else {// apenas os phoneys ficam presos (espera q o Unblocker interrompa o sleep e
-						// continua o run)
+				} else {
+					// apenas os phoneys ficam presos (espera q o Unblocker interrompa o sleep e continua o run)
 					if (p instanceof PhoneyHumanPlayer) {
 						lock();
 					}
 				}
 			}
-		} else {
-			// System.out.println("Player "+p.getIdentification()+" apenas mexe em
-			// "+(p.originalStrength-p.ronda%p.originalStrength)+" rondas");
 		}
 		p.ronda++;
 		game.notifyChange();

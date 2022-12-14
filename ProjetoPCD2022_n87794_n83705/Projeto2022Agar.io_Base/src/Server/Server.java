@@ -54,7 +54,7 @@ public class Server {
 		GameGuiMain gui = new GameGuiMain(game, false);
 		gui.init();
 		// start do servidor que fica a esperar o add dos jogadores
-		Server servidor = new Server(8080, game);
+		new Server(8080, game);
 	}
 
 }

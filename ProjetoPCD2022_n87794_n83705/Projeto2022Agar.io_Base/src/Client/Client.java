@@ -32,10 +32,7 @@ public class Client {
 			// conexao cliente servidor
 			connectToGame(address, port);
 			// gui start
-			//if(gui==null)
 			startGame();
-			// processo de rececao da info do servidor e envio de mensagem com informacao
-			// necessaria p move (direcao)
 			communication();
 		} catch (IOException | ClassNotFoundException | InterruptedException e) {
 			e.printStackTrace();
@@ -91,6 +88,7 @@ public class Client {
 				break;
 			}
 		}
+		//fecho das ligacoes quando o jogo acabar
 		objIn.close();
 		out.close();
 		socket.close();
@@ -103,10 +101,10 @@ public class Client {
 			int port=Integer.parseInt(args[1]);
 			int keys=Integer.parseInt(args[2]);
 			if(keys==0) {
-				Client c = new Client(ip, port, false);
+				new Client(ip, port, false);
 			}
 			else {
-				Client c = new Client(ip, port, true);
+				new Client(ip, port, true);
 			}
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
