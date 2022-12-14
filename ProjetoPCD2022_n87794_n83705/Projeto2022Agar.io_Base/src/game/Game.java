@@ -40,6 +40,7 @@ public class Game extends Observable implements Serializable {
 				board[x][y] = new Cell(new Coordinate(x, y), this);
 		//this.endCount= new CDLEnd(this);
 		this.end = new EndThread(this);
+		end.start();
 	}
 
 	public void updateBoard(Cell[][] x) {

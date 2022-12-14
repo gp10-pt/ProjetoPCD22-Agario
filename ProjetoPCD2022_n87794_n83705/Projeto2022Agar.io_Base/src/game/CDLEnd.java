@@ -1,33 +1,35 @@
 package game;
 
 import java.io.Serializable;
+import java.util.concurrent.CountDownLatch;
 
 
 public class CDLEnd implements Serializable{
 
-    private Game game;
 	boolean finished=false;
-	private int goal;
+	int goal;
 
     public CDLEnd(Game game){
-        this.game=game;
+        this.goal=game.NUM_WINNERS;
     }
 
     public synchronized void await() throws InterruptedException {
-		while (!finished) {
-			wait();
-		}
+		wait();
 	}
+    
+    public int getWinners() {
+    	return goal;
+    }
 
-	public synchronized void countDownLatch(int id) {
-		System.out.println("O jogador " + id + " chegou a energia maxima E VENCEU !!\n--------------------------------------------\n");
-		goal++;
-		synchronized(this){
-			if(goal==game.NUM_WINNERS){
+	public synchronized void decrement(int id) {
+		synchronized(this) {
+			System.out.println("O jogador " + id + " chegou a energia maxima E VENCEU !!\n--------------------------------------------\n");	
+			goal--;
+			if(goal==0) {
 				finished=true;
 				notifyAll();
 			}	
-		}				
+		}
 	}
     
 }

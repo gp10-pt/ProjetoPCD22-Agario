@@ -17,7 +17,7 @@ public class Client {
 	private boolean alternateKeys;
 	private ObjectInputStream objIn;
 	private PrintWriter out;
-	private GameGuiMain gui;
+	private GameGuiMain gui=null;
 	private BoardJComponent listener;
 
 	// cria client e conecta ao jogo
@@ -32,6 +32,7 @@ public class Client {
 			// conexao cliente servidor
 			connectToGame(address, port);
 			// gui start
+			//if(gui==null)
 			startGame();
 			// processo de rececao da info do servidor e envio de mensagem com informacao
 			// necessaria p move (direcao)
@@ -92,6 +93,7 @@ public class Client {
 		}
 		objIn.close();
 		out.close();
+		socket.close();
 	}
 
 	// inicia 1 cliente para controlar 1 humano ( args = localhost 8080 0/1 ) - 0 para setas e 1 para wasd

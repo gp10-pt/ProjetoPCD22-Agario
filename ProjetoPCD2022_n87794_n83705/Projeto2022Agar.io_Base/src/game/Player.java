@@ -134,7 +134,7 @@ public abstract class Player implements Serializable {
 		if (getCurrentStrength() >= (byte) win) {
 			currentStrength = (byte) win;
 			won = true;
-			game.getCDL().countDownLatch(id);
+			game.getCDL().decrement(id);
 		}
 		s.death();
 	}
