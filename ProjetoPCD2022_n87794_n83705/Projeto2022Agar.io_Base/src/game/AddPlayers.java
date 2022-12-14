@@ -33,7 +33,7 @@ public class AddPlayers extends Thread implements Serializable {
 				while (player.playerIsAlive()) {
 					try {
 						this.u = new Unblocker(game, player);
-						u.th.start();
+						u.start();
 						move(player);
 						checkWin();
 						sleep(game.REFRESH_INTERVAL);
@@ -91,7 +91,7 @@ public class AddPlayers extends Thread implements Serializable {
 		}
 	}
 
-	public void move(Player p) throws InterruptedException {
+	public synchronized void move(Player p) throws InterruptedException {
 		if (!p.won && p.playerIsAlive()) {
 			// gerar a direcao pa mover se nao tiver ganho e tiver vivo
 			if (!p.isHumanPlayer()) {
@@ -103,7 +103,7 @@ public class AddPlayers extends Thread implements Serializable {
 		}
 	}
 
-	public void moveTo(Player p, Direction direction) throws InterruptedException {
+	public synchronized void moveTo(Player p, Direction direction) throws InterruptedException {
 		if (p.ronda % p.originalStrength == 0) {
 			Coordinate future = null;
 			Coordinate pre = p.getPosition();

@@ -1,29 +1,35 @@
 package game;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class EndThread extends Thread implements Serializable{
     private Game game;
 	private CDLEnd countdownlatch;
+    //public AtomicInteger goal=new AtomicInteger();
 
     public EndThread(Game game) {
 		this.game = game;
-		countdownlatch = new CDLEnd(game);
+		this.countdownlatch = new CDLEnd(game);
+        game.setCDL(countdownlatch);
 	}
 
-    public synchronized void run() {
+    public void run() {
         synchronized(countdownlatch){ 
-            while(countdownlatch.goal!=game.NUM_WINNERS){
+            while(!countdownlatch.finished){
                 try {
-                    countdownlatch.wait();
+                    //wait();
+                    countdownlatch.await();
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                game.endGame();
-            }   
+                System.out.println("EndThread a finalizar");
+                //if(countdownlatch.finished)                 
+            }
+            game.endGame();   
         }
-
+        
 	}
 
 }

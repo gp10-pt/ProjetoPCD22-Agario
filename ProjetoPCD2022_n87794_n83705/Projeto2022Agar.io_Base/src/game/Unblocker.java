@@ -2,9 +2,8 @@ package game;
 
 import java.io.Serializable;
 
-public class Unblocker implements Runnable, Serializable {
+public class Unblocker extends Thread implements Serializable {
 	protected Game game;
-	public Thread th;
 	private Player p;
 //	private int id;
 
@@ -12,13 +11,11 @@ public class Unblocker implements Runnable, Serializable {
 		super();
 		this.game = game;
 		this.p = player;
-		Thread t = new Thread(this);
-		this.th = t;
 		// System.out.println("Unblocker ligado");
 	}
 
 	public void stopU() {
-		th.stop();
+		this.stop();
 	}
 
 	// se player isBlocked vai esperar e dar unlock
@@ -26,12 +23,12 @@ public class Unblocker implements Runnable, Serializable {
 	public synchronized void run() {
 		// TODO Auto-generated method stub
 		try {
-			th.sleep(2000);
+			this.sleep(2000);
 			if (p.isBlocked() && p.playerIsAlive()) {
 				p.isBlocked = false;
 				//System.out.println("Player "+p.getIdentification()+ " unblocked");
 				p.aP.interrupt();
-				th.stop();
+				this.stop();
 			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block

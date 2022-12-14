@@ -38,7 +38,7 @@ public class Game extends Observable implements Serializable {
 		for (int x = 0; x < Game.DIMX; x++)
 			for (int y = 0; y < Game.DIMY; y++)
 				board[x][y] = new Cell(new Coordinate(x, y), this);
-		this.endCount= null;
+		//this.endCount= new CDLEnd(this);
 		this.end = new EndThread(this);
 	}
 
