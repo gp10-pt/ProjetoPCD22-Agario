@@ -63,10 +63,10 @@ public class HumanPlayer extends Player implements Serializable {
 		if (future != null && !game.getCell(future).isOcupied()) {
 			this.setPosition(game.getCell(future));
 		} else if (future != null && game.getCell(future).isOcupied()) {
-			// fight se o jogador esta vivo, ainda nao venceu e nao esta sleeping
+			// fight se o jogador da celula futura esta vivo, ainda nao venceu e nao esta sleeping
 			Player futuroP = game.getCell(future).getPlayer();
 			if (futuroP.playerIsAlive() && !futuroP.won && !futuroP.isSleeping()) {
-				this.fight(futuroP);
+				fight(futuroP);
 				futuroP.setPosition(game.getCell(future));
 			}
 		}

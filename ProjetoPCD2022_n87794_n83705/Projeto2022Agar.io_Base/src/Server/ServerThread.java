@@ -44,7 +44,7 @@ public class ServerThread extends Thread {
 		while (!game.ended) {
 			//envio info necessaria		
 			Cell[][] board = game.getBoard();
-			if (human.playerIsAlive() && !human.won) {
+			if (human.playerIsAlive() && !human.won && game.getPhoneysStarted()) {
 				Message msg = new Message(board, false, true);
 				objOut.writeObject(msg);
 				// leitura da mensagem do client e update para o humano mexer se este ainda nao tiver ganho			

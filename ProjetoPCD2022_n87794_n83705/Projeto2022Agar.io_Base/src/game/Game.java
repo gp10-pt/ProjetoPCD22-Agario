@@ -16,7 +16,7 @@ public class Game extends Observable implements Serializable {
 
 	public static final int DIMY = 30;
 	public static final int DIMX = 30;
-	public int NUM_PLAYERS = 100;
+	public int NUM_PLAYERS = 200;
 	public final int NUM_WINNERS=5;
 	public final long REFRESH_INTERVAL = 400;
 	public final double MAX_INITIAL_STRENGTH = 3;
@@ -27,12 +27,12 @@ public class Game extends Observable implements Serializable {
 	public Cell[][] board;
 	public CDLEnd endCount;
 	public EndThread end;
-	public AtomicInteger winCondition = new AtomicInteger();
 	public Direction keyD;
 	public boolean ended = false;
 	public ArrayList<Player> players = new ArrayList<Player>();
 	public ArrayList<Player> humans = new ArrayList<Player>();
 	public ArrayList<AddPlayers> threads = new ArrayList<AddPlayers>();
+	private boolean phoneysStarted=false;
 
 	public Game() {
 		board = new Cell[Game.DIMX][Game.DIMY];
@@ -49,7 +49,7 @@ public class Game extends Observable implements Serializable {
 		notifyChange();
 	}
 
-	//board para envio aos clietes
+	//get board para envio aos clietes
 	public Cell[][] getBoard() {
 		Cell[][] duplicate = new Cell[Game.DIMX][Game.DIMY];
 		for (int x = 0; x < Game.DIMX; x++) {
@@ -109,6 +109,15 @@ public class Game extends Observable implements Serializable {
 			p.aP.start();
 		}
 	}
+	
+	public void setPhoneysStarted() {
+		this.phoneysStarted=true;
+	}
+	
+	public boolean getPhoneysStarted() {
+		return phoneysStarted;
+	}
+	
 
 	public void playerAdded(Player p) {
 		// To update GUI
@@ -118,7 +127,7 @@ public class Game extends Observable implements Serializable {
 	//acabar com o jogo ao correr a board e matar todos os players vivos que não venceram
 	public void endGame() {
 		ended = true;
-		System.out.println("\n-Ã‚Â»\nFIM DO JOGO\nÃ‚Â«-\n");
+		System.out.println("\n\n-» FIM DO JOGO «-\n\n");
 		for (int x = 0; x < DIMX; x++) {
 			for (int y = 0; y < DIMY; y++) {
 				if (this.board[x][y].isOcupied() && this.board[x][y].getPlayer().playerIsAlive()
