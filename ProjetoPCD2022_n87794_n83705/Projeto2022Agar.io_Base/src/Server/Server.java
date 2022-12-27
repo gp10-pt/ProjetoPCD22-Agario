@@ -26,7 +26,7 @@ public class Server {
 
 	public void runServer() throws IOException, ClassNotFoundException {
 		sSocket = new ServerSocket(PORT);
-		System.out.println("\n-� Servidor a correr no porto " + PORT + " �-\n");
+		System.out.println("\n-Â»\nServidor a correr no porto " + PORT + "\nÂ«-\n");
 		// espera pelo pedido de ligacao dos clientes e lanÃ§a a thread autonoma p
 		// tratar do jogador
 		try {
@@ -51,8 +51,8 @@ public class Server {
 	public static void main(String[] args) {
 		Game game = new Game();
 		game.startPhoneys();
-		//GameGuiMain gui = new GameGuiMain(game, false);
-		//gui.init();
+		GameGuiMain gui = new GameGuiMain(game, false);
+		gui.init();
 		// start do servidor que fica a esperar o add dos jogadores
 		new Server(8080, game);
 	}

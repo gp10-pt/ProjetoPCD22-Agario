@@ -77,7 +77,7 @@ public class Client {
 			if (!msg.getEnd()) {
 				if(msg.getAlive()){
 					if(listener.getLastPressedDirection()!=null){
-						System.out.println("Direção escolhida: "+listener.getLastPressedDirection());
+						System.out.println(listener.getLastPressedDirection());
 					}
 					// envio da direcao p server
 					out.println(listener.getLastPressedDirection());
@@ -91,9 +91,10 @@ public class Client {
 		//fecho das ligacoes quando o jogo acabar
 		objIn.close();
 		out.close();
+		socket.close();
 	}
 
-	// inicia 1 cliente para controlar 1 humano ( args = localhost 8080 0/1 ) : 0 para setas e 1 para wasd
+	// inicia 1 cliente para controlar 1 humano ( args = localhost 8080 0/1 ) - 0 para setas e 1 para wasd
 	public static void main(String[] args) {
 		try {
 			InetAddress ip=InetAddress.getByName(args[0]);

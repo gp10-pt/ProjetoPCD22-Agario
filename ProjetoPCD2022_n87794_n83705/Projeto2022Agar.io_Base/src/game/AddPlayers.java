@@ -31,8 +31,6 @@ public class AddPlayers extends Thread implements Serializable {
 				}
 				//player acorda e comeca as suas acoes
 				player.setAwake();
-				if(!game.getPhoneysStarted())
-					game.setPhoneysStarted();
 				while (player.playerIsAlive()) {
 					try {
 						this.u = new Unblocker(game, player);
