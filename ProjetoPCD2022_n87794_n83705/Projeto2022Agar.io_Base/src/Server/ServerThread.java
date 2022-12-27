@@ -40,6 +40,7 @@ public class ServerThread extends Thread {
 	public void communication() throws InterruptedException, IOException {
 		//player adicionado ao jogo apos conexao do cliente
 		HumanPlayer human = game.addHuman();
+		human.setAwake();
 		System.out.println("Cliente adicionado!\n");
 		while (!game.ended) {
 			//envio info necessaria		
@@ -53,21 +54,21 @@ public class ServerThread extends Thread {
 					switch (s) {
 					case "RIGHT":
 						human.next = environment.Direction.RIGHT;
-						human.move(human.next);
 						break;
 					case "LEFT":
 						human.next = environment.Direction.LEFT;
-						human.move(human.next);
 						break;
 					case "DOWN":
 						human.next = environment.Direction.DOWN;
-						human.move(human.next);
 						break;
 					case "UP":
 						human.next = environment.Direction.UP;
-						human.move(human.next);
 						break;
 					}
+					// envio da direcao p jogo
+					human.move();
+					// clean da direcao
+					human.next=null;
 				}
 				//se morto ou vencedor enviar a board p update visual
 			} else {
@@ -82,7 +83,7 @@ public class ServerThread extends Thread {
 	}
 
 	//envio de mensagem de fim de jogo para o cliente
-	public void endComs() throws IOException {
+	public void endComs() throws IOException, InterruptedException {
 		Message fim = new Message(game.getBoard(), true, false);
 		objOut.writeObject(fim);
 		objOut.close();

@@ -20,10 +20,10 @@ public class CDLEnd implements Serializable{
     	return goal;
     }
 
-    //se um jogador vencer goal é decrementado e quando chegar a 0 notifica a Thread a espera deste objeto
+    //se um jogador vencer goal ï¿½ decrementado e quando chegar a 0 notifica a Thread a espera deste objeto
 	public synchronized void decrement(int id) {
 		synchronized(this) {
-			System.out.println("O jogador " + id + " chegou a energia maxima E VENCEU !!\n--------------------------------------------\n");	
+			System.out.println("\n O jogador " + id + " chegou a energia maxima E VENCEU !!\n");	
 			goal--;
 			if(goal==0) {
 				finished=true;

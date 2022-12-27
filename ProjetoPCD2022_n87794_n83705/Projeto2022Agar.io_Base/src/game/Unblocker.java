@@ -16,23 +16,27 @@ public class Unblocker extends Thread implements Serializable {
 
 	@SuppressWarnings("deprecation")
 	public void stopU() {
-		this.stop();
+		stop();
 	}
 
 	// se player isBlocked vai esperar e dar unlock
-	@SuppressWarnings({ "static-access", "deprecation" })
+	@SuppressWarnings({ "static-access" })
 	@Override
 	public synchronized void run() {
 		// TODO Auto-generated method stub
-		try {
-			this.sleep(2000);
-			if (p.isBlocked() && p.playerIsAlive()) {
-				p.isBlocked = false;
-				p.aP.interrupt();
-				this.stop();
+		synchronized(p) {
+			try {
+				sleep(2000);
+				if (p.isBlocked() && p.playerIsAlive()) {
+					p.notifyAll();
+					//p.aP.interrupt();
+					p.isBlocked = false;
+					System.out.println("Unblocker a desbloquear "+ p.getIdentification());
+					return;
+				}
+			} catch (InterruptedException e) {
+				return;
 			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 	}
 }

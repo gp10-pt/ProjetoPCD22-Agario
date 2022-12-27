@@ -24,19 +24,19 @@ public class AddPlayers extends Thread implements Serializable {
 				try {
 					// add do jogador e sleep inicial
 					addPhoneyToGame();
-					this.sleep(10000);
+					sleep(10000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				//player acorda e come�a as suas acoes
+				//player acorda e comeca as suas acoes
 				player.setAwake();
 				while (player.playerIsAlive()) {
 					try {
 						this.u = new Unblocker(game, player);
-						u.start();
-						move(player);
-						checkWin();
+						//u.start();
+						player.move();
+						//u.stopU();
 						sleep(game.REFRESH_INTERVAL);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
@@ -49,115 +49,57 @@ public class AddPlayers extends Thread implements Serializable {
 
 	//add phoney player com wait pela celula inicial se ja ocupada 
 	@SuppressWarnings("deprecation")
-	public synchronized void addPhoneyToGame() {
-		synchronized (player.initialPos) {
-			while (player.initialPos.isOcupied()) {
-				if (!player.initialPos.getPlayer().playerIsAlive()) { // se dead nao colocar o jogador
-					System.out.println(
-							"Jogador " + player.getIdentification() + " eliminado pois jogador morto esta na posicao");
-					this.stop();
-				}
-				// se nao, esperar que a posicao fique livre e depois adicionar ao jogo
-				System.out.println("Posicao ja ocupada para player " + player.getIdentification() + " pelo Player "
-						+ player.initialPos.getPlayer().getIdentification());
-				try {
-					player.initialPos.wait();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				System.out.println("Player "+ player.getIdentification() + " a ser colocado apos espera!");
+	public synchronized void addPhoneyToGame() throws InterruptedException {
+		int occupant;
+		//lockar a cell para iniciar interacao de colocaçao inicial
+		player.getInitialPos().acquireLock();
+		
+		while (player.getInitialPos().isOcupied()) {
+			// esperar que a posicao fique livre e depois adicionar ao jogo
+//			System.out.println("Posicao ja ocupada para player " + player.getIdentification() + " pelo Player "
+//					+ player.getInitialPos().getPlayer().getIdentification());
+//			release da lock ate ser notificado e concorrer de novo para a obter
+			occupant=player.getInitialPos().getPlayer().getIdentification();
+			System.out.println("Player "+player.getIdentification()+" a espera que a cell "+player.getInitialPos().getPosition().toString()+"seja desocupada pelo player   "
+					+ occupant);
+			
+			player.getInitialPos().go.await();
+			// quando houver movimento ou jogador morto
+			//se jogo acabou exit
+			if(game.ended) {
+				System.out.println("Jogador " + player.getIdentification() + " eliminado pois jogo acabou");
+				this.stop();
 			}
+			//se player na cell isDead, unlock sem ser colocado e exit
+			if (player.getInitialPos().getPlayer()!=null && !player.getInitialPos().getPlayer().playerIsAlive()) { 
+				System.out.println("Jogador " + player.getIdentification() + " eliminado pois jogador "+ player.getInitialPos().deadPlayer +" esta morto na posicao");
+				player.getInitialPos().returnLock();
+				this.stop();
+			}
+			
+			System.out.println("Player "+player.getIdentification()+" a receber lock da cell "+player.getInitialPos().getPosition().toString()+" libertada pelo player   "
+					+ occupant);
+			//se nao houver outro jogador a ser colocado antes é colocado no jogo
+			if(!player.getInitialPos().isOcupied())
+				System.out.println("Player "+ player.getIdentification() + " a ser colocado apos espera!");
 		}
-		player.initialPos.setPlayer(player);
-		player.setPosition(player.initialPos);
+//		como o player tem pos == null nao desencadeia o void gas()		
+		player.setPosition(player.getInitialPos());
 		// To update GUI
 		game.playerAdded(player);
+//		unlock no fim da interacao
+		player.getInitialPos().returnLock();
 	}
 
-	//lock do phoney pois se movimentou contra player morto
+	//bloqueio do move pois se movimentou contra player morto com wait
+	//apos 2segs o Unblocker vai notificar e o move fica desbloqueado
 	@SuppressWarnings("static-access")
-	public synchronized void lock() throws InterruptedException {
-		player.isBlocked = true;
-		if (player.isBlocked())
-			this.sleep(2000);
+	public void lock() throws InterruptedException {
+		player.isBlocked=true;
+		System.out.println(player.getIdentification() + " a espera do Unblocker");
+		player.wait();
 	}
 
-	// se o jogador chegar a energia maxima terminar o movimento e a thread
-	@SuppressWarnings("deprecation")
-	public void checkWin() {
-		if (player.getCurrentStrength() >= (byte) player.win) {
-			player.currentStrength = (byte) player.win;
-			player.won = true;
-			this.stop();
-		}
-	}
 
-	//move especifico de player automatico
-	public synchronized void move(Player p) throws InterruptedException {
-		if (!p.won && p.playerIsAlive()) {
-			// gerar a direcao pa mover se nao tiver ganho e tiver vivo
-			if (!p.isHumanPlayer()) {
-				Direction[] hipoteses = { Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT };
-				int d = (int) (Math.random() * hipoteses.length);
-				p.next = hipoteses[d];
-			}
-			moveTo(p, p.next);
-		}
-	}
-
-	@SuppressWarnings("static-access")
-	public synchronized void moveTo(Player p, Direction direction) throws InterruptedException {
-		if (p.ronda % p.originalStrength == 0) {
-			Coordinate future = null;
-			Coordinate pre = p.getPosition();
-			int x = pre.x;
-			int y = pre.y;
-			//proxima direcao com check OutOfBounds
-			if (direction != null)
-				switch (direction) {
-				case UP: {
-					if (y - 1 >= 0)
-						future = pre.translate(Direction.UP.getVector());
-					break;
-				}
-				case DOWN: {
-					if (y + 1 < game.DIMY)
-						future = pre.translate(Direction.DOWN.getVector());
-					break;
-				}
-				case LEFT: {
-					if (x - 1 >= 0)
-						future = pre.translate(Direction.LEFT.getVector());
-					break;
-				}
-				case RIGHT: {
-					if (x + 1 < game.DIMX)
-						future = pre.translate(Direction.RIGHT.getVector());
-					break;
-				}
-				}
-			// movimenta se pois a celula esta vazia e nao esta bloqueado, terminando o Unblocker pois nao foi necessario
-			if (future != null && !game.getCell(future).isOcupied()) {
-				p.setPosition(game.getCell(future));
-				u.stopU();
-			} else if (future != null && game.getCell(future).isOcupied()) {
-				// fight se o jogador esta vivo, ainda nao venceu e nao esta sleeping
-				Player futuroP = game.getCell(future).getPlayer();
-				if (futuroP.playerIsAlive() && !futuroP.won && !futuroP.isSleeping()) {
-					player.fight(futuroP);
-					futuroP.setPosition(game.getCell(future));
-					u.stopU();
-				} else {
-					// apenas os phoneys ficam presos (espera q o Unblocker interrompa o sleep e continua o run)
-					if (p instanceof PhoneyHumanPlayer) {
-						lock();
-					}
-				}
-			}
-		}
-		p.ronda++;
-		game.notifyChange();
-	}
 
 }

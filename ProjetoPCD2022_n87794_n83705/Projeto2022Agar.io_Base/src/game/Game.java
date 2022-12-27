@@ -17,7 +17,7 @@ public class Game extends Observable implements Serializable {
 	public static final int DIMY = 30;
 	public static final int DIMX = 30;
 	public int NUM_PLAYERS = 100;
-	public final int NUM_WINNERS=5;
+	public final int NUM_WINNERS=3;
 	public final long REFRESH_INTERVAL = 400;
 	public final double MAX_INITIAL_STRENGTH = 3;
 	public final double MAX_INITIAL_STRENGTH_HUMANS = 5;
@@ -50,7 +50,7 @@ public class Game extends Observable implements Serializable {
 	}
 
 	//board para envio aos clietes
-	public Cell[][] getBoard() {
+	public Cell[][] getBoard() throws InterruptedException {
 		Cell[][] duplicate = new Cell[Game.DIMX][Game.DIMY];
 		for (int x = 0; x < Game.DIMX; x++) {
 			for (int y = 0; y < Game.DIMY; y++) {
@@ -82,7 +82,7 @@ public class Game extends Observable implements Serializable {
 	 */
 
 	// start dos humanos que acontece com o lancamento do cliente q vai se ligar pelo server
-	public HumanPlayer addHuman() throws UnknownHostException {
+	public HumanPlayer addHuman() throws UnknownHostException, InterruptedException {
 		Player p = new HumanPlayer(NUM_PLAYERS, this);
 		humans.add(p);
 		p.addHumanToGame();
@@ -115,7 +115,7 @@ public class Game extends Observable implements Serializable {
 		notifyChange();
 	}
 
-	//acabar com o jogo ao correr a board e matar todos os players vivos que n�o venceram
+	//acabar com o jogo ao correr a board e matar todos os players vivos que n�o venceram
 	public void endGame() {
 		ended = true;
 		System.out.println("\n-Â»\nFIM DO JOGO\nÂ«-\n");

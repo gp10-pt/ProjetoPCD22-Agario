@@ -15,20 +15,20 @@ public abstract class Player implements Serializable {
 
 	protected Game game;
 
-	public int id;
+	private int id;
 
 	byte currentStrength;
 	protected byte originalStrength;
 	public boolean isBlocked = false;
-	public boolean isDead = false;
+	private boolean isDead = false;
 	private boolean isSleeping = true;
-	public boolean canRun = false;
+	private boolean canRun = false;
 
-	public final Cell initialPos;
-	public Cell pos;
+	private final Cell initialPos;
+	private Cell pos;
 	public Direction next;
 	public int ronda;
-	public boolean won;
+	public boolean won=false;
 	public final byte win = (byte) 10;
 
 	public AddPlayers aP;
@@ -61,13 +61,12 @@ public abstract class Player implements Serializable {
 		initialPos = null;
 		this.currentStrength = strength;
 	}
-		
-	public abstract boolean isHumanPlayer();
-	
 
-	public void addHumanToGame() {
-		initialPos.setPlayer(this);
-		setPosition(initialPos);
+	public abstract boolean isHumanPlayer();
+
+	public void addHumanToGame() throws InterruptedException {
+		getInitialPos().setPlayer(this);
+		setPosition(getInitialPos());
 		// To update GUI
 		game.playerAdded(this);
 	}
@@ -75,7 +74,7 @@ public abstract class Player implements Serializable {
 	@Override
 	public String toString() {
 		return "Player [id=" + id + ", currentStrength=" + currentStrength + ", getCurrentCell()=" + getCurrentCell()
-				+ "]";
+		+ "]";
 	}
 
 	@Override
@@ -120,9 +119,8 @@ public abstract class Player implements Serializable {
 		return !this.isDead;
 	}
 
-	public void setPosition(Cell c) {
-		if (pos != null)
-			this.game.getCell(pos.getPosition()).removePlayer();
+	//ao colocar o player na celula nova este e removido da anterior
+	public void setPosition(Cell c) throws InterruptedException {
 		c.setPlayer(this);
 		pos = c;
 	}
@@ -135,7 +133,7 @@ public abstract class Player implements Serializable {
 		return this.isBlocked == true;
 	}
 
-	//acao fight desencadeia o recebimento da energia do adversario e a sua morte
+	//ação fight desencadeia o recebimento da energia do adversario e a sua morte	
 	public void absorbs(Player s) {
 		this.currentStrength += s.getCurrentStrength();
 		if (getCurrentStrength() >= (byte) win) {
@@ -150,13 +148,14 @@ public abstract class Player implements Serializable {
 	public void death() {
 		this.currentStrength = 0;
 		this.isDead = true;
+		getCurrentCell().warn(getIdentification());
 	}
 
-	//desbloqueamento do sleep inicial
+	//desbloqueamento do sleep inicial	
 	public void setAwake() {
 		this.isSleeping = false;
 	}
-	
+
 	//fight com o jogador da celula destino
 	public void fight(Player b) {
 		if (this.getCurrentStrength() == b.getCurrentStrength()) {
@@ -171,5 +170,83 @@ public abstract class Player implements Serializable {
 		else
 			this.absorbs(b);
 	}
+
+	public Cell getInitialPos() {
+		return initialPos;
+	}
+
+	//procedimento para inicio da movimentaçao
+	public synchronized void move() throws InterruptedException {
+		if (!this.won && this.playerIsAlive()) {
+			// gerar a direcao pa mover se nao tiver ganho e tiver vivo e phoney
+			if (!this.isHumanPlayer()) {
+				Direction[] hipoteses = { Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT };
+				int d = (int) (Math.random() * hipoteses.length);
+				this.next = hipoteses[d];
+			}
+			moveTo(this, this.next);
+		}
+	}
+
+	//procedimento que realiza a movimentaçao do jogador
+	@SuppressWarnings("static-access")
+	private synchronized void moveTo(Player p, Direction direction) throws InterruptedException {
+		// se for humano ou vez do bot mexer
+		if (p.isHumanPlayer() || p.ronda % p.originalStrength == 0) {
+			Coordinate future = null;
+			Coordinate pre = p.getPosition();
+			int x = pre.x;
+			int y = pre.y;
+			//proxima direcao com check OutOfBounds
+			if (direction != null) {
+				switch (direction) {
+				case UP: {
+					if (y - 1 >= 0)
+						future = pre.translate(Direction.UP.getVector());
+					break;
+				}
+				case DOWN: {
+					if (y + 1 < game.DIMY)
+						future = pre.translate(Direction.DOWN.getVector());
+					break;
+				}
+				case LEFT: {
+					if (x - 1 >= 0)
+						future = pre.translate(Direction.LEFT.getVector());
+					break;
+				}
+				case RIGHT: {
+					if (x + 1 < game.DIMX)
+						future = pre.translate(Direction.RIGHT.getVector());
+					break;
+				}
+				}
+			}
+			aP.u.start();
+			// movimenta-se pois a celula esta vazia e nao esta bloqueado, terminando o Unblocker pois nao foi necessario
+			if (future != null && !game.getCell(future).isOcupied()) {
+				if (p instanceof PhoneyHumanPlayer) {
+					aP.u.stopU();}
+				p.setPosition(game.getCell(future));				
+			} else if (future != null && game.getCell(future).isOcupied()) {
+				// fight se o jogador esta vivo, ainda nao venceu e nao esta sleeping
+				Player futuroP = game.getCell(future).getPlayer();
+				if (futuroP.playerIsAlive() && !futuroP.won && !futuroP.isSleeping()) {
+					if (p instanceof PhoneyHumanPlayer) {
+						aP.u.stopU();}
+					fight(futuroP);
+					futuroP.setPosition(game.getCell(future));
+				} else {
+					// apenas os phoneys ficam presos (espera q o Unblocker interrompa o sleep e continua o run)
+					if (p instanceof PhoneyHumanPlayer) {
+						aP.lock();
+					}
+				}
+			}
+		}
+		p.ronda++;
+		game.notifyChange();
+	}
+
 
 }

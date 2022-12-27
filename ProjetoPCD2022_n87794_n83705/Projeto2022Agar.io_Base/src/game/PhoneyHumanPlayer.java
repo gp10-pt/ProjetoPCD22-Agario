@@ -11,8 +11,6 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class PhoneyHumanPlayer extends Player implements Serializable {
 
-	int id;
-
 	public PhoneyHumanPlayer(int id, Game game) {
 		super(id, game);
 	}
