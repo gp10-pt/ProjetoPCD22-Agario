@@ -96,7 +96,7 @@ public class AddPlayers extends Thread implements Serializable {
 	@SuppressWarnings("static-access")
 	public void lock() throws InterruptedException {
 		player.isBlocked=true;
-		System.out.println(player.getIdentification() + " a espera do Unblocker");
+		//System.out.println(player.getIdentification() + " a espera do Unblocker");
 		player.wait();
 	}
 
